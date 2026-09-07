@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import toast from 'react-hot-toast';
-import { Calendar, Download, Plus, FolderOpen, ChevronLeft, ChevronRight, X, ChevronDown, Eye } from 'lucide-react';
+import { Calendar, Download, Plus, FolderOpen, ChevronLeft, ChevronRight, X, ChevronDown, Eye, Search, Filter, TrendingUp, Scale } from 'lucide-react';
 
 interface WasteItemInput {
   wasteTypeId: string;
@@ -37,7 +37,7 @@ function SearchableSelect({ options, value, onChange, placeholder }: { options: 
       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-          {filtered.slice(0, 10).map(o => ( // PERBAIKAN: Limit 10 items
+          {filtered.slice(0, 10).map(o => (
             <div 
               key={o.value} 
               className="px-4 py-2.5 cursor-pointer hover:bg-gray-50 text-sm border-b border-gray-50 last:border-0"
@@ -63,6 +63,7 @@ export default function AdminSetoranPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [filterNasabahId, setFilterNasabahId] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // Tambahan pencarian mobile
 
   // Paginasi State
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,6 +72,7 @@ export default function AdminSetoranPage() {
   // Modals States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter mobile
   const [selectedDeposit, setSelectedDeposit] = useState<any>(null);
 
   // Form States
@@ -100,7 +102,7 @@ export default function AdminSetoranPage() {
   // Reset Halaman jika filter berubah
   useEffect(() => {
     setCurrentPage(1);
-  }, [startDate, endDate, filterNasabahId, itemsPerPage]);
+  }, [startDate, endDate, filterNasabahId, itemsPerPage, searchQuery]);
 
   // Logika Filter
   const filteredDeposits = deposits.filter(d => {
@@ -108,7 +110,8 @@ export default function AdminSetoranPage() {
     const matchStartDate = startDate ? dDate >= startDate : true;
     const matchEndDate = endDate ? dDate <= endDate : true;
     const matchNasabah = filterNasabahId ? (d.nasabahId === filterNasabahId || d.nasabah?.id === filterNasabahId) : true;
-    return matchStartDate && matchEndDate && matchNasabah;
+    const matchSearch = searchQuery ? d.nasabah?.name?.toLowerCase().includes(searchQuery.toLowerCase()) : true;
+    return matchStartDate && matchEndDate && matchNasabah && matchSearch;
   });
 
   // Logika Paginasi
@@ -205,48 +208,29 @@ export default function AdminSetoranPage() {
   const nasabahOptions = nasabahList.map(n => ({ value: n.id, label: `${n.name} (${n.nasabahId})` }));
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       
-      {/* Toolbar Filter Sesuai Figma */}
-      <div className="flex justify-between items-center bg-white p-2 rounded-lg mb-2">
+      {/* Teks Sapaan Khusus Mobile */}
+      <div className="md:hidden">
+        <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Setoran</h2>
+        <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh transaksi setoran nasabah.</p>
+      </div>
+
+      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP (Sesuai kode asli) --- */}
+      <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
-          {/* Filter Tanggal */}
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
             <Calendar size={16} className="text-gray-500" />
-            <Input 
-              type="date" 
-              value={startDate} 
-              onChange={e => setStartDate(e.target.value)} 
-              className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" 
-            />
+            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />
             <span className="text-gray-400">-</span>
-            <Input 
-              type="date" 
-              value={endDate} 
-              onChange={e => setEndDate(e.target.value)} 
-              className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" 
-            />
+            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />
           </div>
-          
-          {/* PERBAIKAN: Filter Nasabah dengan Searchable Select */}
           <div className="relative w-64">
-             <SearchableSelect 
-               options={[{value: '', label: 'Semua Nasabah'}, ...nasabahOptions]} 
-               value={filterNasabahId} 
-               onChange={setFilterNasabahId} 
-               placeholder="Cari Nasabah..." 
-             />
+             <SearchableSelect options={[{value: '', label: 'Semua Nasabah'}, ...nasabahOptions]} value={filterNasabahId} onChange={setFilterNasabahId} placeholder="Cari Nasabah..." />
           </div>
         </div>
-
         <div className="flex gap-3">
-          {/* PERBAIKAN: Tombol Eksport disabled jika tanggal kosong */}
-          <Button 
-            variant="outline" 
-            onClick={handleExportExcel} 
-            disabled={!startDate || !endDate} 
-            className="flex gap-2 items-center border-gray-200 shadow-sm text-gray-700 hover:bg-gray-50 h-11"
-          >
+          <Button variant="outline" onClick={handleExportExcel} disabled={!startDate || !endDate} className="flex gap-2 items-center border-gray-200 shadow-sm text-gray-700 hover:bg-gray-50 h-11">
             <Download size={16} /> Eksport
           </Button>
           <Button onClick={() => setIsAddModalOpen(true)} className="flex gap-2 items-center bg-[#004d33] hover:bg-[#003322] text-white shadow-sm h-11">
@@ -255,12 +239,39 @@ export default function AdminSetoranPage() {
         </div>
       </div>
 
-      {/* Area Data */}
+      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
+      <div className="md:hidden flex flex-col gap-3">
+        {/* Search Bar Mobile */}
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Input 
+            type="text"
+            placeholder="Cari nama nasabah..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 h-12 bg-gray-100 border-transparent focus-visible:ring-[#004d33]/20 rounded-[10px]"
+          />
+        </div>
+        {/* Tombol Mobile */}
+        <div className="flex gap-2">
+          <Button onClick={() => setIsAddModalOpen(true)} className="flex-1 gap-2 bg-[#002b1c] hover:bg-[#004d33] text-white shadow-sm h-11 rounded-[8px] font-medium text-sm">
+            <Plus size={16} /> Tambah Nasabah
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel} className="flex-1 gap-2 border-gray-200 shadow-sm text-[#002b1c] bg-white h-11 rounded-[8px] font-medium text-sm">
+            <Download size={16} /> Eksport
+          </Button>
+          <Button variant="outline" onClick={() => setIsMobileFilterOpen(true)} className="px-3 border-gray-200 shadow-sm text-gray-700 bg-gray-100/50 h-11 rounded-[8px]">
+            <Filter size={18} />
+          </Button>
+        </div>
+      </div>
+
+      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredDeposits.length === 0 ? (
         /* Empty State */
-        <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-24 bg-white/50">
+        <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
           </div>
@@ -271,109 +282,174 @@ export default function AdminSetoranPage() {
           </Button>
         </div>
       ) : (
-        /* Data Tabel */
-        <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap">
-              <thead className="bg-gray-50/80 text-gray-900 border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Tanggal</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Waktu</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">ID</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Nama</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Total Berat</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Total Harga</th>
-                  <th className="px-6 py-4 font-semibold text-[13px] text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {currentDeposits.map((item) => {
-                  const date = new Date(item.createdAt);
-                  return (
-                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">{date.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</td>
-                      <td className="px-6 py-4">{date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.nasabah?.nasabahId || '-'}</td>
-                      <td className="px-6 py-4">{item.nasabah?.name || '-'}</td>
-                      <td className="px-6 py-4 uppercase font-medium">{item.totalWeight}KG</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.totalAmount.toLocaleString('id-ID')}</td>
-                      <td className="px-6 py-4 text-center">
-                        <button 
-                          onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }}
-                          className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors inline-flex"
-                          title="Lihat Detail Setoran"
-                        >
-                          <Eye size={18} strokeWidth={1.8} />
-                        </button>
-                      </td>
+        <>
+          {/* TABEL VERSI DESKTOP (Original) */}
+          <div className="hidden md:block">
+            <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap">
+                  <thead className="bg-gray-50/80 text-gray-900 border-b border-gray-100">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Tanggal</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Waktu</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">ID</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Nama</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Total Berat</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Total Harga</th>
+                      <th className="px-6 py-4 font-semibold text-[13px] text-center">Aksi</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          
-          {/* Paginasi Visual */}
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
-            <span className="text-gray-500 font-medium">
-              Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button 
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
-              >
-                <ChevronLeft size={18} strokeWidth={2.5} />
-              </button>
-              
-              {getPageNumbers().map((pageNum, idx) => (
-                pageNum === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-1 text-gray-400 font-medium">...</span>
-                ) : (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentPage(pageNum as number)}
-                    className={`w-8 h-8 rounded-md flex items-center justify-center font-semibold transition-colors text-[13px] ${
-                      currentPage === pageNum 
-                        ? 'bg-[#004d33] text-white shadow-sm' 
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                )
-              ))}
-
-              <button 
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
-              >
-                <ChevronRight size={18} strokeWidth={2.5} />
-              </button>
-
-              <div className="relative ml-4">
-                <select 
-                  className="appearance-none h-8 rounded-md border border-gray-200 bg-white pl-3 pr-8 text-[13px] outline-none shadow-sm focus:ring-2 focus:ring-[#004d33]/20 cursor-pointer text-gray-700 font-semibold"
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                >
-                  <option value={10}>10/Halaman</option>
-                  <option value={50}>50/Halaman</option>
-                  <option value={100}>100/Halaman</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} strokeWidth={2.5} />
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {currentDeposits.map((item) => {
+                      const date = new Date(item.createdAt);
+                      return (
+                        <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4">{date.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</td>
+                          <td className="px-6 py-4">{date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.nasabah?.nasabahId || '-'}</td>
+                          <td className="px-6 py-4">{item.nasabah?.name || '-'}</td>
+                          <td className="px-6 py-4 uppercase font-medium">{item.totalWeight}KG</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.totalAmount.toLocaleString('id-ID')}</td>
+                          <td className="px-6 py-4 text-center">
+                            <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors inline-flex">
+                              <Eye size={18} strokeWidth={1.8} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
+              {/* Paginasi Desktop */}
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
+                <span className="text-gray-500 font-medium">
+                  Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors">
+                    <ChevronLeft size={18} strokeWidth={2.5} />
+                  </button>
+                  {getPageNumbers().map((pageNum, idx) => (
+                    pageNum === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="px-1 text-gray-400 font-medium">...</span>
+                    ) : (
+                      <button key={idx} onClick={() => setCurrentPage(pageNum as number)} className={`w-8 h-8 rounded-md flex items-center justify-center font-semibold transition-colors text-[13px] ${currentPage === pageNum ? 'bg-[#004d33] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}>
+                        {pageNum}
+                      </button>
+                    )
+                  ))}
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors">
+                    <ChevronRight size={18} strokeWidth={2.5} />
+                  </button>
+                  <div className="relative ml-4">
+                    <select className="appearance-none h-8 rounded-md border border-gray-200 bg-white pl-3 pr-8 text-[13px] outline-none shadow-sm cursor-pointer text-gray-700 font-semibold" value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
+                      <option value={10}>10/Halaman</option>
+                      <option value={50}>50/Halaman</option>
+                      <option value={100}>100/Halaman</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* LIST VERSI MOBILE */}
+          <div className="md:hidden flex flex-col gap-4">
+            {currentDeposits.map((item, index, arr) => {
+              const date = new Date(item.createdAt);
+              const dateStr = date.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+              
+              // Cek apakah tanggal item ini berbeda dari item sebelumnya (untuk grouping tanggal)
+              const prevDate = index > 0 ? new Date(arr[index - 1].createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '';
+              const showDateHeader = dateStr !== prevDate;
+
+              return (
+                <div key={item.id}>
+                  {showDateHeader && (
+                    <h3 className="text-[14px] font-semibold text-gray-500 mb-3 ml-1 mt-1">{dateStr}</h3>
+                  )}
+                  
+                  <div className="bg-white p-4 rounded-[12px] border border-gray-200 shadow-sm mb-3">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
+                          <TrendingUp size={18} className="text-gray-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-gray-900 text-[15px] leading-tight">{item.nasabah?.name || '-'}</p>
+                          <p className="text-[12px] text-gray-500 mt-1">{item.nasabah?.nasabahId} • {date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                      </div>
+                      <div className="font-bold text-[15px] text-[#004d33]">
+                        + Rp {item.totalAmount.toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 bg-[#004d33] text-white px-3 py-1 rounded-full">
+                        <Scale size={12} />
+                        <span className="text-[11px] font-semibold">{item.totalWeight}kg</span>
+                      </div>
+                      <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="text-gray-400 hover:text-gray-700">
+                        <Eye size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Paginasi Mobile (Simple) */}
+            <div className="flex items-center justify-between pt-2 pb-6">
+               <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
+                 Sebelumnya
+               </button>
+               <span className="text-sm text-gray-500 font-medium">Hal {currentPage} / {totalPages}</span>
+               <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
+                 Selanjutnya
+               </button>
             </div>
           </div>
-        </Card>
+        </>
       )}
 
-      {/* Modal Tambah Setoran Sesuai Figma */}
+      {/* MODAL FILTER MOBILE */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 className="text-lg font-bold text-gray-900">Filter</h2>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-gray-900">Tanggal</label>
+                <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11">
+                  <Calendar size={18} className="text-gray-500" />
+                  <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+                  <span className="text-gray-400">-</span>
+                  <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-gray-900">Nasabah</label>
+                <SearchableSelect options={[{value: '', label: 'Semua Nasabah'}, ...nasabahOptions]} value={filterNasabahId} onChange={setFilterNasabahId} placeholder="Cari Nasabah..." />
+              </div>
+            </div>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] text-white font-medium h-11">Simpan</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TAMBAH SETORAN (Beradaptasi dari Desktop ke Mobile Bottom Sheet) */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <h2 className="text-lg font-bold text-gray-900">Tambah Setoran</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
@@ -382,156 +458,117 @@ export default function AdminSetoranPage() {
             <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto">
               <div className="p-6 space-y-6">
                 
-                {/* Pilih Nama Nasabah */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Nama</label>
-                  <SearchableSelect 
-                    options={nasabahOptions} 
-                    value={selectedNasabahId} 
-                    onChange={setSelectedNasabahId} 
-                    placeholder="Pilih nama nasabah" 
-                  />
+                  <label className="text-[15px] font-semibold text-gray-900">Nama</label>
+                  <SearchableSelect options={nasabahOptions} value={selectedNasabahId} onChange={setSelectedNasabahId} placeholder="Pilih nama nasabah" />
                 </div>
 
-                {/* Jenis & Berat Sampah */}
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-gray-700">Jenis & Berat Sampah</label>
-                  
+                  <label className="text-[15px] font-semibold text-gray-900">Jenis & Berat Sampah</label>
                   {depositItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2.5">
-                      {/* Dropdown Jenis Sampah */}
+                    <div key={idx} className="flex items-center gap-2">
                       <div className="relative flex-1">
                         <select 
-                          className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3.5 pr-10 text-sm outline-none shadow-sm focus:ring-2 focus:ring-[#004d33]/20 cursor-pointer text-gray-700 font-medium"
-                          value={item.wasteTypeId}
-                          onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)}
-                          required
+                          className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-700 font-medium"
+                          value={item.wasteTypeId} onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)} required
                         >
                           <option value="">Pilih jenis sampah</option>
-                          {wasteTypes.map(w => (
-                            <option key={w.id} value={w.id}>{w.name}</option>
-                          ))}
+                          {wasteTypes.map(w => (<option key={w.id} value={w.id}>{w.name}</option>))}
                         </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                       </div>
 
-                      {/* Tombol Hapus Baris (x) jika ada lebih dari 1 */}
                       {depositItems.length > 1 && (
-                        <button 
-                          type="button" 
-                          onClick={() => removeItemRow(idx)} 
-                          className="text-gray-400 hover:text-red-500 p-1 transition-colors"
-                          title="Hapus baris"
-                        >
-                          <X size={16} />
-                        </button>
+                        <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1" title="Hapus baris"><X size={18} /></button>
                       )}
 
-                      {/* Input Berat (kg) */}
-                      <div className="relative w-28">
-                        <Input 
-                          type="number" 
-                          step="0.1" 
-                          min="0.1"
-                          placeholder="0"
-                          value={item.weight} 
-                          onChange={(e) => handleItemChange(idx, 'weight', e.target.value)}
-                          required 
-                          className="h-11 pr-8 shadow-sm border-gray-200 focus-visible:ring-[#004d33]/20 text-sm"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">kg</span>
+                      <div className="relative w-24 md:w-28">
+                        <Input type="number" step="0.1" min="0.1" placeholder="0" value={item.weight} onChange={(e) => handleItemChange(idx, 'weight', e.target.value)} required className="h-11 pr-7 md:pr-8 shadow-sm border-gray-200 text-sm" />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium">kg</span>
                       </div>
                     </div>
                   ))}
 
-                  {/* Tombol Hijau Gelap: Tambah jenis sampah */}
-                  <button 
-                    type="button" 
-                    onClick={() => setDepositItems([...depositItems, { wasteTypeId: '', weight: '' }])}
-                    className="w-full h-11 mt-2 bg-[#004d33] hover:bg-[#003322] text-white rounded-md text-sm font-semibold transition-colors shadow-sm flex items-center justify-center"
-                  >
+                  <button type="button" onClick={() => setDepositItems([...depositItems, { wasteTypeId: '', weight: '' }])} className="w-full h-11 mt-3 bg-[#002b1c] text-white rounded-md text-sm font-semibold transition-colors shadow-sm flex items-center justify-center">
                     Tambah jenis sampah
                   </button>
                 </div>
 
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="font-medium text-gray-600 hover:text-gray-900">Batal</Button>
-                <Button type="submit" className="bg-[#004d33] hover:bg-[#003322] text-white font-medium px-6 shadow-sm">Simpan</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
+                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11">Batal</Button>
+                <Button type="submit" className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white font-medium px-8 h-11 shadow-sm">Simpan</Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Detail Setoran Sesuai Figma */}
+      {/* MODAL DETAIL SETORAN (Beradaptasi dari Desktop ke Mobile Bottom Sheet) */}
       {isDetailModalOpen && selectedDeposit && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-xl bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-auto">
             
-            {/* Header Modal */}
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-start">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-start sticky top-0 bg-white z-10">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Detail Setoran</h2>
-                <p className="text-xs text-gray-400 font-medium mt-0.5">
+                <h2 className="text-xl font-bold text-gray-900">Detail Setoran</h2>
+                <p className="text-[13px] text-gray-500 font-medium mt-0.5">
                   {selectedDeposit.nasabah?.name} - {selectedDeposit.nasabah?.nasabahId}
                 </p>
               </div>
               <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={20} /></button>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Meta Informasi */}
-              <div className="flex gap-12 text-sm border-b border-gray-100 pb-5">
+            <div className="p-6 space-y-6 overflow-y-auto">
+              <div className="flex justify-between md:justify-start md:gap-12 text-sm border-b border-gray-100 pb-5">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Tanggal</p>
-                  <p className="font-semibold text-gray-900">{new Date(selectedDeposit.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</p>
+                  <p className="text-[12px] text-gray-500 font-medium mb-1">Tanggal</p>
+                  <p className="font-semibold text-gray-900">{new Date(selectedDeposit.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Waktu</p>
+                  <p className="text-[12px] text-gray-500 font-medium mb-1">Waktu</p>
                   <p className="font-semibold text-gray-900">{new Date(selectedDeposit.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Nama</p>
+                <div className="hidden md:block">
+                  <p className="text-[12px] text-gray-500 font-medium mb-1">Nama</p>
                   <p className="font-semibold text-gray-900">{selectedDeposit.nasabah?.name}</p>
                 </div>
               </div>
 
-              {/* Rincian Sampah */}
-              <table className="w-full text-left text-sm">
-                <thead className="text-[12px] uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                  <tr>
-                    <th className="pb-3 font-semibold">Jenis Sampah</th>
-                    <th className="pb-3 font-semibold text-center">Berat (kg)</th>
-                    <th className="pb-3 font-semibold text-center">Harga/kg</th>
-                    <th className="pb-3 font-semibold text-right">Sub Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {selectedDeposit.items?.map((item: any) => (
-                    <tr key={item.id} className="text-gray-700">
-                      <td className="py-3.5 font-medium">{item.wasteType?.name}</td>
-                      <td className="py-3.5 text-center">{item.weight}</td>
-                      {/* PERBAIKAN: Rendering Harga Historis (Subtotal / Weight) */}
-                      <td className="py-3.5 text-center text-gray-500">
-                        Rp. {item.weight > 0 ? (item.subtotal / item.weight).toLocaleString('id-ID') : '0'}
-                      </td>
-                      <td className="py-3.5 text-right font-medium text-gray-900">Rp. {item.subtotal?.toLocaleString('id-ID')}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="text-[13px] text-gray-500 border-b border-gray-100">
+                    <tr>
+                      <th className="pb-3 font-medium">Jenis Sampah</th>
+                      <th className="pb-3 font-medium text-center">Berat (kg)</th>
+                      <th className="pb-3 font-medium text-center">Harga/kg</th>
+                      <th className="pb-3 font-medium text-right">Sub Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {selectedDeposit.items?.map((item: any) => (
+                      <tr key={item.id} className="text-gray-900 font-medium">
+                        <td className="py-4">{item.wasteType?.name}</td>
+                        <td className="py-4 text-center">{item.weight}</td>
+                        <td className="py-4 text-center">
+                          Rp. {item.weight > 0 ? (item.subtotal / item.weight).toLocaleString('id-ID') : '0'}
+                        </td>
+                        <td className="py-4 text-right">Rp. {item.subtotal?.toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-              <div className="flex justify-between items-center text-sm pt-1 border-t border-gray-100">
+              <div className="flex justify-between items-center text-sm pt-2">
                 <span className="text-gray-500 font-medium">Total Berat</span>
                 <span className="font-semibold text-gray-900">{selectedDeposit.totalWeight}kg</span>
               </div>
             </div>
 
-            {/* Banner Hijau Gelap Sesuai Figma */}
-            <div className="bg-[#004d33] px-6 py-5 flex justify-between items-center text-white">
-              <span className="font-semibold text-base">Total harga</span>
+            <div className="bg-[#002b1c] px-6 py-6 flex justify-between items-center text-white sticky bottom-0">
+              <span className="font-medium text-[16px]">Total harga</span>
               <span className="font-bold text-2xl tracking-tight">Rp. {selectedDeposit.totalAmount?.toLocaleString('id-ID')}</span>
             </div>
 

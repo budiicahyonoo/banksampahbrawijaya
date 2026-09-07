@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import toast from 'react-hot-toast';
-import { Search, ChevronDown, Download, Plus, FolderOpen, SquarePen, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, ChevronDown, Download, Plus, FolderOpen, SquarePen, ChevronLeft, ChevronRight, X, Filter } from 'lucide-react'; // Tambahan icon Filter
 
 interface Nasabah {
   id: string;
@@ -36,6 +36,7 @@ export default function AdminNasabahPage() {
 
   // Modals State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter khusus mobile
   const [addData, setAddData] = useState({ name: '', email: '', password: '', phone: '', address: '' });
   const [addEmailError, setAddEmailError] = useState('');
 
@@ -181,10 +182,16 @@ export default function AdminNasabahPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       
-      {/* Toolbar Filter Sesuai Figma */}
-      <div className="flex justify-between items-center bg-white p-2 rounded-lg mb-2">
+      {/* Teks Sapaan Khusus Mobile Sesuai Desain */}
+      <div className="md:hidden">
+        <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Nasabah</h2>
+        <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh nasabah terdaftar.</p>
+      </div>
+
+      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP (Original) --- */}
+      <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -219,160 +226,260 @@ export default function AdminNasabahPage() {
         </div>
       </div>
 
-      {/* Area Data */}
+      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
+      <div className="md:hidden flex flex-col gap-3">
+        {/* Search Bar Mobile */}
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Input 
+            type="text"
+            placeholder="Cari nama nasabah..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 h-12 bg-gray-100 border-transparent focus-visible:ring-[#004d33]/20 rounded-[10px]"
+          />
+        </div>
+        {/* Tombol Mobile */}
+        <div className="flex gap-2">
+          <Button onClick={() => setIsAddModalOpen(true)} className="flex-1 gap-2 bg-[#002b1c] hover:bg-[#004d33] text-white shadow-sm h-11 rounded-[8px] font-medium text-sm">
+            <Plus size={16} /> Tambah Nasabah
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel} className="flex-1 gap-2 border-gray-200 shadow-sm text-[#002b1c] bg-white h-11 rounded-[8px] font-medium text-sm">
+            <Download size={16} /> Eksport
+          </Button>
+          <Button variant="outline" onClick={() => setIsMobileFilterOpen(true)} className="px-3 border-gray-200 shadow-sm text-gray-700 bg-gray-100/50 h-11 rounded-[8px]">
+            <Filter size={18} />
+          </Button>
+        </div>
+      </div>
+
+      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredUsers.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-24 bg-white/50">
+        /* Empty State */
+        <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
           </div>
           <h3 className="text-base font-bold text-gray-900 mb-2">Belum ada nasabah</h3>
-          <p className="text-sm text-gray-500 mb-6 text-center">Tambahkan nasabah untuk menampilkan<br/>data ditabel</p>
-          <Button onClick={() => setIsAddModalOpen(true)} className="flex gap-2 items-center bg-[#004d33] hover:bg-[#003322] text-white h-11">
-            <Plus size={16} /> Tambah nasabah
+          <p className="text-sm text-gray-500 mb-6 text-center">Daftar nasabah masih kosong. Silakan<br/>tambahkan nasabah baru.</p>
+          <Button onClick={() => setIsAddModalOpen(true)} className="flex gap-2 items-center bg-[#002b1c] hover:bg-[#004d33] text-white h-11">
+            <Plus size={16} /> Tambah Nasabah
           </Button>
         </div>
       ) : (
-        <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap">
-              <thead className="bg-gray-50/80 text-gray-900 border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 font-semibold text-[13px]">ID</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Nama</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Tanggal</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">No. Telp</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Alamat</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Total Setoran (kg)</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Total Harga (Rp)</th>
-                  <th className="px-6 py-4 font-semibold text-[13px]">Status</th>
-                  <th className="px-6 py-4 font-semibold text-[13px] text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {currentUsers.map((item) => {
-                  const date = new Date(item.createdAt);
-                  return (
-                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.nasabahId}</td>
-                      <td className="px-6 py-4">{item.name}</td>
-                      <td className="px-6 py-4">{date.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</td>
-                      <td className="px-6 py-4">{item.phone || '-'}</td>
-                      <td className="px-6 py-4 truncate max-w-[200px]" title={item.address}>{item.address || '-'}</td>
-                      <td className="px-6 py-4">{item.totalSetoranKg.toLocaleString('id-ID')}</td>
-                      <td className="px-6 py-4">{item.totalHargaRp.toLocaleString('id-ID')}</td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border tracking-wide uppercase ${
-                          item.status === 'AKTIF' 
-                          ? 'bg-green-50 text-green-700 border-green-200' 
-                          : 'bg-red-50 text-red-700 border-red-200'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'AKTIF' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                          {item.status === 'AKTIF' ? 'Aktif' : 'Tidak Aktif'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button 
-                          onClick={() => openEditModal(item)} 
-                          className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded border border-blue-100 transition-colors inline-flex" 
-                          title="Edit Nasabah"
-                        >
-                          <SquarePen size={16} />
-                        </button>
-                      </td>
+        <>
+          {/* TABEL VERSI DESKTOP (Original) */}
+          <div className="hidden md:block">
+            <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap">
+                  <thead className="bg-gray-50/80 text-gray-900 border-b border-gray-100">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold text-[13px]">ID</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Nama</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Tanggal</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">No. Telp</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Alamat</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Total Setoran (kg)</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Total Harga (Rp)</th>
+                      <th className="px-6 py-4 font-semibold text-[13px]">Status</th>
+                      <th className="px-6 py-4 font-semibold text-[13px] text-center">Aksi</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
-            <span className="text-gray-500 font-medium">
-              Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button 
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
-              >
-                <ChevronLeft size={18} strokeWidth={2.5} />
-              </button>
-              
-              {getPageNumbers().map((pageNum, idx) => (
-                pageNum === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-1 text-gray-400 font-medium">...</span>
-                ) : (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentPage(pageNum as number)}
-                    className={`w-8 h-8 rounded-md flex items-center justify-center font-semibold transition-colors text-[13px] ${
-                      currentPage === pageNum 
-                        ? 'bg-[#004d33] text-white shadow-sm' 
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                )
-              ))}
-
-              <button 
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
-              >
-                <ChevronRight size={18} strokeWidth={2.5} />
-              </button>
-
-              <div className="relative ml-4">
-                <select 
-                  className="appearance-none h-8 rounded-md border border-gray-200 bg-white pl-3 pr-8 text-[13px] outline-none shadow-sm focus:ring-2 focus:ring-[#004d33]/20 cursor-pointer text-gray-700 font-semibold"
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                >
-                  <option value={10}>10/Halaman</option>
-                  <option value={50}>50/Halaman</option>
-                  <option value={100}>100/Halaman</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} strokeWidth={2.5} />
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {currentUsers.map((item) => {
+                      const date = new Date(item.createdAt);
+                      return (
+                        <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.nasabahId}</td>
+                          <td className="px-6 py-4">{item.name}</td>
+                          <td className="px-6 py-4">{date.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</td>
+                          <td className="px-6 py-4">{item.phone || '-'}</td>
+                          <td className="px-6 py-4 truncate max-w-[200px]" title={item.address}>{item.address || '-'}</td>
+                          <td className="px-6 py-4">{item.totalSetoranKg.toLocaleString('id-ID')}</td>
+                          <td className="px-6 py-4">{item.totalHargaRp.toLocaleString('id-ID')}</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border tracking-wide uppercase ${
+                              item.status === 'AKTIF' 
+                              ? 'bg-green-50 text-green-700 border-green-200' 
+                              : 'bg-red-50 text-red-700 border-red-200'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'AKTIF' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                              {item.status === 'AKTIF' ? 'Aktif' : 'Tidak Aktif'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button 
+                              onClick={() => openEditModal(item)} 
+                              className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded border border-blue-100 transition-colors inline-flex" 
+                              title="Edit Nasabah"
+                            >
+                              <SquarePen size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
+              
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
+                <span className="text-gray-500 font-medium">
+                  Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors">
+                    <ChevronLeft size={18} strokeWidth={2.5} />
+                  </button>
+                  {getPageNumbers().map((pageNum, idx) => (
+                    pageNum === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="px-1 text-gray-400 font-medium">...</span>
+                    ) : (
+                      <button key={idx} onClick={() => setCurrentPage(pageNum as number)} className={`w-8 h-8 rounded-md flex items-center justify-center font-semibold transition-colors text-[13px] ${currentPage === pageNum ? 'bg-[#004d33] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}>
+                        {pageNum}
+                      </button>
+                    )
+                  ))}
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:hover:text-gray-500 transition-colors">
+                    <ChevronRight size={18} strokeWidth={2.5} />
+                  </button>
+                  <div className="relative ml-4">
+                    <select className="appearance-none h-8 rounded-md border border-gray-200 bg-white pl-3 pr-8 text-[13px] outline-none shadow-sm focus:ring-2 focus:ring-[#004d33]/20 cursor-pointer text-gray-700 font-semibold" value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
+                      <option value={10}>10/Halaman</option>
+                      <option value={50}>50/Halaman</option>
+                      <option value={100}>100/Halaman</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* LIST VERSI MOBILE */}
+          <div className="md:hidden flex flex-col gap-4">
+            {currentUsers.map((item) => (
+              <div key={item.id} className="bg-white p-4 rounded-[12px] border border-gray-200 shadow-sm">
+                
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-gray-900 text-[16px] leading-tight">{item.name}</h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border tracking-wide ${
+                        item.status === 'AKTIF' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'AKTIF' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        {item.status === 'AKTIF' ? 'Aktif' : 'Tidak Aktif'}
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-gray-500">{item.nasabahId} • {new Date(item.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                  <button onClick={() => openEditModal(item)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
+                    <SquarePen size={18} />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-[13px]">
+                  <div>
+                    <p className="text-gray-500 font-medium mb-1">Nama</p>
+                    <p className="font-semibold text-gray-900">{item.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium mb-1">No. Telp</p>
+                    <p className="font-semibold text-gray-900">{item.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium mb-1">Alamat</p>
+                    <p className="font-semibold text-gray-900 truncate pr-2">{item.address || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium mb-1">Saldo</p>
+                    <p className="font-semibold text-gray-900">Rp. {item.totalHargaRp.toLocaleString('id-ID')}</p>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+
+            {/* Paginasi Mobile */}
+            <div className="flex items-center justify-between pt-2 pb-6">
+               <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
+                 Sebelumnya
+               </button>
+               <span className="text-sm text-gray-500 font-medium">Hal {currentPage} / {totalPages}</span>
+               <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
+                 Selanjutnya
+               </button>
             </div>
           </div>
-        </Card>
+        </>
       )}
 
-      {/* Modal Tambah Nasabah */}
+      {/* MODAL FILTER MOBILE */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 className="text-lg font-bold text-gray-900">Filter</h2>
+              <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[15px] font-semibold text-gray-900">Status</label>
+                <div className="relative">
+                  <select 
+                    className="appearance-none h-11 w-full rounded-md border border-gray-200 bg-white pl-4 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-900 font-medium"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="Semua">Semua Status</option>
+                    <option value="AKTIF">Aktif</option>
+                    <option value="NONAKTIF">Tidak Aktif</option>
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] hover:bg-[#004d33] text-white font-medium h-11">Simpan</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah Nasabah (Adaptasi Bottom Sheet Mobile) */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <h2 className="text-lg font-bold text-gray-900">Tambah Nasabah</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
             <form onSubmit={handleAddSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-5">
+              <div className="p-6 space-y-4 md:space-y-5">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Nama</label>
-                  <Input placeholder="Siti Aminah" value={addData.name} onChange={e => setAddData({...addData, name: e.target.value})} required className="h-11 shadow-sm border-gray-200 focus-visible:ring-[#004d33]/20" />
+                  <label className="text-[14px] font-semibold text-gray-900">Nama</label>
+                  <Input placeholder="Siti Aminah" value={addData.name} onChange={e => setAddData({...addData, name: e.target.value})} required className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Email</label>
-                  <Input type="email" placeholder="sitiaminah@gmail.com" value={addData.email} onChange={e => handleEmailChange(e, 'ADD')} required className={`h-11 shadow-sm ${addEmailError ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
+                  <label className="text-[14px] font-semibold text-gray-900">Email</label>
+                  <Input type="email" placeholder="sitiaminah@gmail.com" value={addData.email} onChange={e => handleEmailChange(e, 'ADD')} required className={`h-11 shadow-sm text-sm ${addEmailError ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
                   {addEmailError && <p className="text-xs font-medium text-red-500 mt-1">{addEmailError}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Password</label>
+                  <label className="text-[14px] font-semibold text-gray-900">Password</label>
                   <Input 
                     type="password" 
                     placeholder="••••••••" 
                     value={addData.password} 
                     onChange={e => setAddData({...addData, password: e.target.value})} 
                     required 
-                    className="h-11 shadow-sm border-gray-200 focus-visible:ring-[#004d33]/20" 
+                    className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" 
                   />
                   {addData.password.length > 0 && addData.password.length < 6 && (
                     <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>
@@ -380,14 +487,14 @@ export default function AdminNasabahPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">No. Telp</label>
+                  <label className="text-[14px] font-semibold text-gray-900">No. Telp</label>
                   <Input 
                     type="tel" 
                     placeholder="081387383482" 
                     value={addData.phone} 
                     onChange={e => setAddData({...addData, phone: e.target.value})} 
                     required 
-                    className="h-11 shadow-sm border-gray-200 focus-visible:ring-[#004d33]/20" 
+                    className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" 
                   />
                   {addData.phone.length > 0 && !validatePhone(addData.phone) && (
                     <p className="text-xs font-medium text-red-500 mt-1">Minimal 9 digit & hanya angka</p>
@@ -395,56 +502,52 @@ export default function AdminNasabahPage() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Alamat</label>
+                  <label className="text-[14px] font-semibold text-gray-900">Alamat</label>
                   <textarea 
                     placeholder="Banjarum RT01/RW07" 
                     value={addData.address} 
                     onChange={e => setAddData({...addData, address: e.target.value})} 
                     required 
-                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#004d33]/20 focus:border-[#004d33] transition-all min-h-[100px] resize-y"
+                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-1 focus:ring-[#004d33] focus:border-[#004d33] transition-all min-h-[100px] md:min-h-[100px] resize-y"
                   />
                 </div>
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="font-medium text-gray-600 hover:text-gray-900">Batal</Button>
-                <Button type="submit" disabled={!isAddFormValid} className="bg-[#004d33] hover:bg-[#003322] text-white disabled:bg-gray-300 font-medium px-6">Simpan</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
+                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+                <Button type="submit" disabled={!isAddFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Edit Nasabah */}
+      {/* Modal Edit Nasabah (Adaptasi Bottom Sheet Mobile) */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <h2 className="text-lg font-bold text-gray-900">Edit Nasabah</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
             <form onSubmit={handleEditSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Nama</label>
-                  <Input value={editData.name} disabled className="h-11 bg-gray-50 text-gray-500 border-gray-200 shadow-sm cursor-not-allowed" required />
-                </div>
+              <div className="p-6 space-y-4 md:space-y-5">
                 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Email</label>
-                  <Input type="email" value={editData.email} onChange={e => handleEmailChange(e, 'EDIT')} required className={`h-11 shadow-sm ${editEmailError ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
+                  <label className="text-[14px] font-semibold text-gray-900">Email</label>
+                  <Input type="email" value={editData.email} onChange={e => handleEmailChange(e, 'EDIT')} required className={`h-11 shadow-sm text-sm ${editEmailError ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
                   {editEmailError && <p className="text-xs font-medium text-red-500 mt-1">{editEmailError}</p>}
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Password</label>
+                  <label className="text-[14px] font-semibold text-gray-900">Password</label>
                   <Input 
                     type="password" 
                     placeholder="Isi hanya jika ingin mengganti sandi" 
                     value={editData.password} 
                     onChange={e => setEditData({...editData, password: e.target.value})} 
-                    className={`h-11 shadow-sm ${editData.password.length > 0 && editData.password.length < 6 ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} 
+                    className={`h-11 shadow-sm text-sm ${editData.password.length > 0 && editData.password.length < 6 ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} 
                   />
                   {editData.password.length > 0 && editData.password.length < 6 && (
                     <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>
@@ -452,35 +555,10 @@ export default function AdminNasabahPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">No. Telp</label>
-                  <Input 
-                    type="tel" 
-                    placeholder="081387383482" 
-                    value={editData.phone} 
-                    onChange={e => setEditData({...editData, phone: e.target.value})} 
-                    required 
-                    className={`h-11 shadow-sm ${!validatePhone(editData.phone) && editData.phone.length > 0 ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} 
-                  />
-                  {!validatePhone(editData.phone) && editData.phone.length > 0 && (
-                    <p className="text-xs font-medium text-red-500 mt-1">Minimal 9 digit & hanya angka</p>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Alamat</label>
-                  <textarea 
-                    value={editData.address} 
-                    onChange={e => setEditData({...editData, address: e.target.value})} 
-                    required 
-                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-2 focus:ring-[#004d33]/20 focus:border-[#004d33] transition-all min-h-[100px] resize-y"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">Status</label>
+                  <label className="text-[14px] font-semibold text-gray-900">Status</label>
                   <div className="relative">
                     <select 
-                      className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 text-sm outline-none shadow-sm focus:ring-2 focus:ring-[#004d33]/20 focus:border-[#004d33]"
+                      className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] focus:border-[#004d33]"
                       value={editData.status}
                       onChange={e => setEditData({...editData, status: e.target.value})}
                     >
@@ -490,11 +568,12 @@ export default function AdminNasabahPage() {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                   </div>
                 </div>
+
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsEditModalOpen(false)} className="font-medium text-gray-600 hover:text-gray-900">Batal</Button>
-                <Button type="submit" disabled={!isEditFormValid} className="bg-[#004d33] hover:bg-[#003322] text-white disabled:bg-gray-300 font-medium px-6">Simpan</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
+                <Button variant="ghost" type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+                <Button type="submit" disabled={!isEditFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
               </div>
             </form>
           </div>
