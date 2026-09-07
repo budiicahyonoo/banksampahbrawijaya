@@ -6,20 +6,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
-import { LayoutGrid, History, User, LogOut, Bell, Menu, X } from 'lucide-react'; // Tambahkan Menu dan X
+import { LayoutGrid, History, User, LogOut, Bell } from 'lucide-react';
 
 export default function NasabahLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<{name: string, nasabahId: string, avatar?: string} | null>(null);
-
-  // State untuk Hamburger Menu Mobile
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Tutup sidebar jika berpindah halaman di Mobile
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     api.get('/nasabah/dashboard').then(res => setUser(res.data.user)).catch(() => {});
@@ -54,26 +46,12 @@ export default function NasabahLayout({ children }: { children: React.ReactNode 
   const { title, subtitle } = getPageTitle();
 
   return (
-    <div className="flex h-screen bg-gray-50/50 overflow-hidden">
+    <div className="flex h-screen bg-white md:bg-gray-50/50 overflow-hidden">
       
-      {/* OVERLAY MOBILE */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* SIDEBAR */}
-      <aside className={`
-        fixed md:static inset-y-0 left-0 z-50 
-        w-64 bg-[#004d33] text-white flex flex-col shadow-2xl md:shadow-lg shrink-0 
-        transform transition-transform duration-300 ease-in-out
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
-      `}>
-        <div className="p-6 flex items-center justify-between md:justify-start gap-3">
+      {/* SIDEBAR DESKTOP (Tetap original, disembunyikan di Mobile) */}
+      <aside className="hidden md:flex inset-y-0 left-0 z-50 w-64 bg-[#004d33] text-white flex-col shadow-lg shrink-0">
+        <div className="p-6 flex items-center justify-start gap-3">
           <div className="flex items-center gap-3">
-            {/* PERBAIKAN LOGO: bg-white dihapus, ukuran disesuaikan */}
             <div className="w-10 h-10 relative shrink-0">
                <Image src="/logo.png" alt="Logo Bank Sampah" fill sizes="40px" className="object-contain" />
             </div>
@@ -82,10 +60,6 @@ export default function NasabahLayout({ children }: { children: React.ReactNode 
               <p className="text-[10px] text-green-200 leading-tight">Sobat Banjar Arum<br/>Berseri</p>
             </div>
           </div>
-          
-          <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-green-200 hover:text-white p-1">
-            <X size={20} />
-          </button>
         </div>
         
         <div className="px-6 py-4 text-[10px] uppercase tracking-wider font-semibold text-green-300 mt-2">
@@ -117,71 +91,71 @@ export default function NasabahLayout({ children }: { children: React.ReactNode 
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         
-        {/* HEADER */}
-        <header className="h-20 md:h-24 bg-[#FCFDF9] border-b border-[#F2F4E6] px-4 md:px-8 flex items-center justify-between shrink-0 z-10">
-          
-          <div className="flex items-center gap-4">
-            {/* Tombol Hamburger Mobile */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden text-[#004d33] p-1.5 hover:bg-green-50 rounded-md transition-colors"
-            >
-              <Menu size={24} />
-            </button>
-
-            <div>
-              {pathname === '/dashboard/nasabah' ? (
-                <>
-                  <p className="hidden sm:block text-gray-500 text-sm mb-1">{subtitle}</p>
-                  <h1 className="text-lg md:text-[22px] font-bold text-gray-900 leading-tight truncate max-w-[200px] md:max-w-none">{title}</h1>
-                </>
-              ) : (
-                <>
-                  <h1 className="text-lg md:text-[22px] font-bold text-gray-900 mb-1 leading-tight">{title}</h1>
-                  <p className="hidden sm:block text-gray-500 text-sm">{subtitle}</p>
-                </>
-              )}
-            </div>
+        {/* HEADER DESKTOP (Sesuai kode awal) */}
+        <header className="hidden md:flex h-24 bg-[#FCFDF9] border-b border-[#F2F4E6] px-8 items-center justify-between shrink-0 z-10">
+          <div>
+            <p className="text-gray-500 text-sm mb-1">{subtitle}</p>
+            <h1 className="text-[22px] font-bold text-gray-900 leading-tight">{title}</h1>
           </div>
-
-          <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/dashboard/nasabah/profil" className="flex items-center gap-3 md:gap-4 group cursor-pointer">
-              <div className="text-right hidden sm:block">
+          <div className="flex items-center gap-6">
+            <Link href="/dashboard/nasabah/profil" className="flex items-center gap-4 group cursor-pointer">
+              <div className="text-right">
                 <p className="text-sm font-semibold text-gray-900 group-hover:text-[#004d33] transition-colors">{user?.name || 'Memuat...'}</p>
                 <p className="text-[11px] text-gray-500 font-medium">{user?.nasabahId || '-'}</p>
               </div>
               <div className="relative">
-                <div className="w-10 h-10 md:w-11 md:h-11 bg-[#F5F7F0] rounded-full flex items-center justify-center font-bold text-gray-700 text-sm md:text-base border border-[#E8EBE0] group-hover:border-[#004d33] transition-colors shadow-sm overflow-hidden relative">
-                  {user?.avatar ? ( // <-- PERBAIKAN: Cek apakah user punya avatar
-                    <Image src={user.avatar} alt="Profile" fill className="object-cover" />
-                  ) : (
-                    getInitials(user?.name)
-                  )}
+                <div className="w-11 h-11 bg-[#F5F7F0] rounded-full flex items-center justify-center font-bold text-gray-700 text-base border border-[#E8EBE0] group-hover:border-[#004d33] transition-colors shadow-sm overflow-hidden relative">
+                  {user?.avatar ? <Image src={user.avatar} alt="Profile" fill className="object-cover" /> : getInitials(user?.name)}
                 </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
               </div>
             </Link>
-            
-            {/* Lonceng Tetap Ada untuk Nasabah */}
-            <Link 
-              href="/dashboard/nasabah/notifikasi"
-              className={`relative w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-colors border shadow-sm ${
-                pathname === '/dashboard/nasabah/notifikasi' 
-                  ? 'bg-[#004d33] text-white border-[#004d33]' 
-                  : 'bg-[#F5F7F0] text-[#004d33] border-[#E8EBE0] hover:bg-[#E8EBE0]'
-              }`}
-            >
+            <Link href="/dashboard/nasabah/notifikasi" className="relative w-11 h-11 rounded-full flex items-center justify-center transition-colors border shadow-sm bg-[#F5F7F0] text-[#004d33] border-[#E8EBE0] hover:bg-[#E8EBE0]">
               <Bell size={20} strokeWidth={pathname === '/dashboard/nasabah/notifikasi' ? 2.5 : 2} />
             </Link>
           </div>
         </header>
 
+        {/* HEADER MOBILE (Desain Baru: Avatar Kiri, Nama & ID, Bell Kanan) */}
+        <header className="md:hidden flex items-center justify-between p-5 bg-white shrink-0 z-10 border-b border-gray-100/50">
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 bg-[#F5F7F0] rounded-full flex items-center justify-center font-bold text-gray-700 text-sm border border-gray-200 overflow-hidden relative">
+                {user?.avatar ? <Image src={user.avatar} alt="Profile" fill className="object-cover" /> : getInitials(user?.name)}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-900 text-[15px] leading-tight">{user?.name || 'Memuat...'}</span>
+              <span className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">{user?.nasabahId || '-'}</span>
+            </div>
+          </div>
+          <Link href="/dashboard/nasabah/notifikasi" className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#004d33] border border-gray-200 shadow-sm">
+            <Bell size={18} />
+          </Link>
+        </header>
+
         {/* PAGE CONTENT */}
-        <main className="flex-1 overflow-y-auto bg-white p-4 md:p-8 relative">
+        <main className="flex-1 overflow-y-auto bg-white p-4 pb-28 md:p-8 relative">
           {children}
         </main>
+
+        {/* BOTTOM NAVIGATION MOBILE (Kapsul Hijau Tua) */}
+        <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-max bg-[#002b1c] rounded-full p-1.5 flex items-center gap-1 shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.path;
+            return (
+              <Link key={item.path} href={item.path} className={`flex items-center justify-center rounded-full transition-all duration-300 ${isActive ? 'bg-[#004d33] text-white px-5 py-2.5' : 'text-green-300 hover:text-white px-4 py-2.5'}`}>
+                  <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                  {isActive && <span className="ml-2 text-xs font-medium">{item.name}</span>}
+              </Link>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );
