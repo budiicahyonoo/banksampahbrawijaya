@@ -63,7 +63,7 @@ export default function AdminSetoranPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [filterNasabahId, setFilterNasabahId] = useState('');
-  const [searchQuery, setSearchQuery] = useState(''); // Tambahan pencarian mobile
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Paginasi State
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,12 +72,13 @@ export default function AdminSetoranPage() {
   // Modals States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter mobile
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedDeposit, setSelectedDeposit] = useState<any>(null);
 
-  // Form States
+  // Form & Submit States
   const [selectedNasabahId, setSelectedNasabahId] = useState('');
   const [depositItems, setDepositItems] = useState<WasteItemInput[]>([{ wasteTypeId: '', weight: '' }]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State baru untuk mencegah double submit
 
   const fetchData = async () => {
     try {
@@ -151,6 +152,8 @@ export default function AdminSetoranPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Mencegah fungsi berjalan jika sedang submit
+
     if (!selectedNasabahId) {
       toast.error('Pilih nasabah terlebih dahulu');
       return;
@@ -171,7 +174,9 @@ export default function AdminSetoranPage() {
       return;
     }
 
+    setIsSubmitting(true); // Kunci tombol submit
     const loadingToast = toast.loading('Menyimpan setoran...');
+    
     try {
       await api.post('/deposits', { nasabahId: selectedNasabahId, items: formattedItems });
       setIsAddModalOpen(false);
@@ -182,6 +187,8 @@ export default function AdminSetoranPage() {
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || 'Gagal mencatat setoran';
       toast.error(errorMsg, { id: loadingToast });
+    } finally {
+      setIsSubmitting(false); // Buka kembali tombol submit setelah selesai
     }
   };
 
@@ -216,7 +223,7 @@ export default function AdminSetoranPage() {
         <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh transaksi setoran nasabah.</p>
       </div>
 
-      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP (Sesuai kode asli) --- */}
+      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP --- */}
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
@@ -230,7 +237,13 @@ export default function AdminSetoranPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={handleExportExcel} disabled={!startDate || !endDate} className="flex gap-2 items-center border-gray-200 shadow-sm text-gray-700 hover:bg-gray-50 h-11">
+          {/* Eksport Button Desktop */}
+          <Button 
+            variant="outline" 
+            onClick={handleExportExcel} 
+            disabled={!startDate || !endDate || filteredDeposits.length === 0} 
+            className="flex gap-2 items-center border-gray-200 shadow-sm text-gray-700 hover:bg-gray-50 h-11"
+          >
             <Download size={16} /> Eksport
           </Button>
           <Button onClick={() => setIsAddModalOpen(true)} className="flex gap-2 items-center bg-[#004d33] hover:bg-[#003322] text-white shadow-sm h-11">
@@ -255,9 +268,15 @@ export default function AdminSetoranPage() {
         {/* Tombol Mobile */}
         <div className="flex gap-2">
           <Button onClick={() => setIsAddModalOpen(true)} className="flex-1 gap-2 bg-[#002b1c] hover:bg-[#004d33] text-white shadow-sm h-11 rounded-[8px] font-medium text-sm">
-            <Plus size={16} /> Tambah Nasabah
+            <Plus size={16} /> Catat Setoran
           </Button>
-          <Button variant="outline" onClick={handleExportExcel} className="flex-1 gap-2 border-gray-200 shadow-sm text-[#002b1c] bg-white h-11 rounded-[8px] font-medium text-sm">
+          {/* Eksport Button Mobile */}
+          <Button 
+            variant="outline" 
+            onClick={handleExportExcel} 
+            disabled={!startDate || !endDate || filteredDeposits.length === 0} 
+            className="flex-1 gap-2 border-gray-200 shadow-sm text-[#002b1c] bg-white h-11 rounded-[8px] font-medium text-sm disabled:opacity-50"
+          >
             <Download size={16} /> Eksport
           </Button>
           <Button variant="outline" onClick={() => setIsMobileFilterOpen(true)} className="px-3 border-gray-200 shadow-sm text-gray-700 bg-gray-100/50 h-11 rounded-[8px]">
@@ -446,7 +465,7 @@ export default function AdminSetoranPage() {
         </div>
       )}
 
-      {/* MODAL TAMBAH SETORAN (Beradaptasi dari Desktop ke Mobile Bottom Sheet) */}
+      {/* MODAL TAMBAH SETORAN */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
@@ -498,14 +517,23 @@ export default function AdminSetoranPage() {
               
               <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
                 <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11">Batal</Button>
-                <Button type="submit" className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white font-medium px-8 h-11 shadow-sm">Simpan</Button>
+                
+                {/* TOMBOL SUBMIT DENGAN STATE LOADING */}
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:opacity-70 disabled:cursor-not-allowed font-medium px-8 h-11 shadow-sm transition-all"
+                >
+                  {isSubmitting ? 'Memproses...' : 'Simpan'}
+                </Button>
+
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* MODAL DETAIL SETORAN (Beradaptasi dari Desktop ke Mobile Bottom Sheet) */}
+      {/* MODAL DETAIL SETORAN */}
       {isDetailModalOpen && selectedDeposit && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-xl bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-auto">

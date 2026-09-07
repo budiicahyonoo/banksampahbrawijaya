@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Pencil, X, Edit3 } from 'lucide-react'; // Tambahan icon Edit
+import { Pencil, X, Edit3 } from 'lucide-react';
 import Image from 'next/image';
 
 export default function NasabahProfil() {
@@ -220,103 +220,88 @@ export default function NasabahProfil() {
           <p className="text-[13px] text-gray-500 font-medium mt-1">{profile.nasabahId}</p>
         </div>
 
-        <h2 className="text-[17px] font-bold text-gray-900 mt-6 mb-3 px-1">Informasi Pribadi</h2>
+        {/* HEADER INFORMASI PRIBADI */}
+        <div className="flex justify-between items-center mt-6 mb-3 px-1">
+          <h2 className="text-[17px] font-bold text-gray-900">Informasi Pribadi</h2>
+          {isEditing ? (
+            <Button onClick={triggerSaveModal} disabled={!isFormValid} className="h-8 px-4 bg-[#004d33] hover:bg-[#003322] text-white rounded-md text-xs font-medium disabled:bg-gray-300">
+              Simpan
+            </Button>
+          ) : (
+            <Button onClick={() => setIsEditing(true)} className="h-8 px-3 bg-[#004d33] hover:bg-[#003322] text-white rounded-md text-xs font-medium flex items-center gap-1.5">
+              <Edit3 size={14} /> Edit
+            </Button>
+          )}
+        </div>
 
         {/* KARTU INFORMASI */}
         <div className="bg-white rounded-[16px] border border-gray-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-4 border-b border-gray-100">
             <p className="text-[12px] text-gray-500 mb-1 font-medium">ID Nasabah</p>
-            <p className="font-semibold text-[15px] text-gray-900">{profile.nasabahId}</p>
+            <p className={`font-semibold text-[15px] ${isEditing ? 'text-gray-400' : 'text-gray-900'}`}>{profile.nasabahId}</p>
           </div>
           <div className="p-4 border-b border-gray-100">
             <p className="text-[12px] text-gray-500 mb-1 font-medium">Nama</p>
-            <p className="font-semibold text-[15px] text-gray-900">{profile.name}</p>
+            <p className={`font-semibold text-[15px] ${isEditing ? 'text-gray-400' : 'text-gray-900'}`}>{profile.name}</p>
           </div>
           <div className="p-4 border-b border-gray-100">
             <p className="text-[12px] text-gray-500 mb-1 font-medium">Email</p>
-            <p className="font-semibold text-[15px] text-gray-900">{profile.email}</p>
+            <p className={`font-semibold text-[15px] ${isEditing ? 'text-gray-400' : 'text-gray-900'}`}>{profile.email}</p>
           </div>
 
-          {/* Nomor Telepon (Dengan tombol Edit per-baris sesuai UI) */}
-          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-            <div className="flex-1 pr-4">
-              <p className="text-[12px] text-gray-500 mb-1 font-medium">Nomor Telepon</p>
-              {isEditing ? (
-                <div>
-                  <Input type="tel" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} className="h-9 mt-1 text-sm border-gray-300 rounded-lg" />
-                  {!isPhoneValid && phoneInput.length > 0 && <p className="text-xs text-red-500 mt-1">Tidak valid</p>}
-                </div>
-              ) : (
-                <p className="font-semibold text-[15px] text-gray-900">{profile.phone || '-'}</p>
-              )}
-            </div>
-            {!isEditing && (
-              <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 border border-gray-200 rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-800 hover:bg-gray-50 transition-colors shrink-0">
-                Edit <Edit3 size={14} />
-              </button>
+          {/* Nomor Telepon */}
+          <div className="p-4 border-b border-gray-100">
+            <p className="text-[12px] text-gray-500 mb-1 font-medium">Nomor Telepon</p>
+            {isEditing ? (
+              <div>
+                <Input type="tel" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} className="h-9 mt-1 text-sm border-gray-300 rounded-md font-semibold text-gray-900 px-3" />
+                {!isPhoneValid && phoneInput.length > 0 && <p className="text-xs text-red-500 mt-1">Tidak valid</p>}
+              </div>
+            ) : (
+              <p className="font-semibold text-[15px] text-gray-900">{profile.phone || '-'}</p>
             )}
           </div>
 
-          {/* Alamat (Dengan tombol Edit per-baris sesuai UI) */}
-          <div className="p-4 flex justify-between items-start">
-            <div className="flex-1 pr-4">
-              <p className="text-[12px] text-gray-500 mb-1 font-medium">Alamat</p>
-              {isEditing ? (
-                <div>
-                  <textarea value={addressInput} onChange={e => setAddressInput(e.target.value)} className="w-full min-h-[80px] p-2 mt-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#004d33]" />
-                  {!isAddressValid && addressInput.length > 0 && <p className="text-xs text-red-500 mt-1">Wajib diisi</p>}
-                </div>
-              ) : (
-                <p className="font-semibold text-[15px] text-gray-900 leading-snug">{profile.address || '-'}</p>
-              )}
-            </div>
-            {!isEditing && (
-              <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 border border-gray-200 rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-800 hover:bg-gray-50 transition-colors shrink-0">
-                Edit <Edit3 size={14} />
-              </button>
+          {/* Alamat */}
+          <div className="p-4">
+            <p className="text-[12px] text-gray-500 mb-1 font-medium">Alamat</p>
+            {isEditing ? (
+              <div>
+                <textarea value={addressInput} onChange={e => setAddressInput(e.target.value)} className="w-full min-h-[60px] p-3 mt-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004d33] font-semibold text-gray-900" />
+                {!isAddressValid && addressInput.length > 0 && <p className="text-xs text-red-500 mt-1">Wajib diisi</p>}
+              </div>
+            ) : (
+              <p className="font-semibold text-[15px] text-gray-900 leading-snug">{profile.address || '-'}</p>
             )}
           </div>
         </div>
 
-        {/* Tombol Aksi Mobile (Simpan/Batal saat Edit, atau Logout saat Normal) */}
+        {/* Tombol Keluar Mobile */}
         <div className="mt-6 mb-2">
-          {isEditing ? (
-            <div className="flex gap-3">
-              <Button onClick={() => { setIsEditing(false); setPhoneInput(profile.phone); setAddressInput(profile.address); setPreviewImage(profile.avatar); }} variant="outline" className="flex-1 h-12 text-gray-700 border-gray-300 rounded-[10px] font-semibold text-[15px]">
-                Batal
-              </Button>
-              <Button onClick={triggerSaveModal} disabled={!isFormValid} className="flex-1 h-12 bg-[#004d33] hover:bg-[#003322] text-white rounded-[10px] font-semibold text-[15px] disabled:bg-gray-300">
-                Simpan
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={() => { Cookies.remove('token'); router.push('/auth/login'); }} className="w-full bg-[#E50000] hover:bg-red-700 text-white font-semibold py-6 h-auto rounded-[10px] text-[16px]">
-              Keluar
-            </Button>
-          )}
+          <Button onClick={() => { Cookies.remove('token'); router.push('/auth/login'); }} className="w-full bg-[#E50000] hover:bg-red-700 text-white font-semibold py-6 h-auto rounded-[10px] text-[16px]">
+            Keluar
+          </Button>
         </div>
       </div>
 
       {/* Modal Konfirmasi Edit (Berlaku untuk Desktop & Mobile) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl overflow-hidden p-6 relative text-center">
-            <button onClick={() => setIsModalOpen(false)} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
-              <X size={20} />
-            </button>
+          <div className="w-full max-w-[340px] md:max-w-[400px] bg-white rounded-2xl shadow-xl overflow-hidden p-6 relative text-center">
             
-            <h3 className="text-lg font-bold text-gray-900 mb-5 border-b border-gray-100 pb-3 text-left">Edit Profil</h3>
+            {/* Header Modal - Tanpa Border Bawah Sesuai Gambar 3 */}
+            <h3 className="text-xl font-bold text-gray-900 mb-5 text-center">Edit Profil</h3>
             
-            <div className="w-14 h-14 bg-gray-50 text-gray-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
+            <div className="w-14 h-14 bg-gray-50 text-gray-500 rounded-full flex items-center justify-center mx-auto mb-5 border border-gray-200">
               <Pencil size={24} />
             </div>
             
-            <p className="text-sm font-semibold text-gray-900 mb-1">Anda yakin ingin mengubah data profil anda?</p>
-            <p className="text-xs text-gray-500 mb-8">Data yang diubah akan tersimpan di sistem.</p>
+            <p className="text-[15px] font-bold text-gray-900 mb-1 leading-snug">Anda yakin ingin mengubah data profil anda</p>
+            <p className="text-[13px] text-gray-500 mb-8">Data yang diubah akan tersimpan</p>
             
             <div className="flex gap-3 w-full">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 font-medium h-11 border-gray-200 text-gray-700">Batal</Button>
-              <Button onClick={handleUpdate} className="flex-1 bg-[#004d33] hover:bg-[#003322] text-white font-medium h-11">Simpan</Button>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 font-semibold h-11 border-gray-200 bg-gray-50 text-gray-700 rounded-lg">Batal</Button>
+              <Button onClick={handleUpdate} className="flex-1 bg-[#004d33] hover:bg-[#003322] text-white font-semibold h-11 rounded-lg">Simpan</Button>
             </div>
           </div>
         </div>

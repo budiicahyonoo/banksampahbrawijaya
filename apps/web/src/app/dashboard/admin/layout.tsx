@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, Scale, CreditCard, Users, Recycle, LogOut, Menu, X, Bell } from 'lucide-react'; // Bell ditambahkan kembali untuk mobile
+import { LayoutGrid, Scale, CreditCard, Users, Recycle, LogOut, Menu, X } from 'lucide-react'; // Bell Dihapus
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen bg-white md:bg-gray-50/50 overflow-hidden">
       
-      {/* SIDEBAR DESKTOP (Tetap original, disembunyikan di Mobile) */}
+      {/* SIDEBAR DESKTOP */}
       <aside className="hidden md:flex inset-y-0 left-0 z-50 w-64 bg-[#004d33] text-white flex-col shadow-lg shrink-0">
         <div className="p-6 flex items-center justify-start gap-3">
           <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         
-        {/* HEADER DESKTOP (Sesuai kode awal) */}
+        {/* HEADER DESKTOP */}
         <header className="hidden md:flex h-24 bg-[#FCFDF9] border-b border-[#F2F4E6] px-8 items-center justify-between shrink-0 z-10">
           <div>
             <p className="text-gray-500 text-sm mb-1">{subtitle}</p>
@@ -108,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* HEADER MOBILE (Desain Baru) */}
+        {/* HEADER MOBILE (Desain Baru: Bell dihapus, ditambah tombol Logout) */}
         <header className="md:hidden flex items-center justify-between p-5 bg-white shrink-0 z-10 border-b border-gray-100/50">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
@@ -119,8 +119,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <span className="font-medium text-gray-900 text-[15px] leading-tight">Admin Pengelola</span>
           </div>
-          <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#004d33] border border-gray-200 shadow-sm">
-            <Bell size={18} />
+          {/* Tombol Logout Khusus Mobile */}
+          <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center text-red-500 border border-red-100 shadow-sm hover:bg-red-100 transition-colors">
+            <LogOut size={16} strokeWidth={2.5} className="mr-0.5" />
           </button>
         </header>
 
@@ -129,8 +130,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
 
-        {/* BOTTOM NAVIGATION MOBILE (Kapsul Hijau Tua) */}
-        <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] bg-[#002b1c] rounded-full p-1.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50">
+        {/* BOTTOM NAVIGATION MOBILE */}
+        <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] bg-[#002b1c] rounded-full p-1.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-40">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;

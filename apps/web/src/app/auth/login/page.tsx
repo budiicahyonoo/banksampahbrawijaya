@@ -7,11 +7,12 @@ import Image from 'next/image';
 import { api } from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react'; // Tambahan Eye dan EyeOff
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State untuk toggle password
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -99,14 +100,23 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <label className="text-[13px] font-semibold text-gray-700 uppercase tracking-wider">Kata Sandi</label>
-            <Input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-              className="h-12 bg-gray-50/50 border-gray-200 focus-visible:ring-[#004d33]/20 focus-visible:border-[#004d33] transition-colors"
-            />
+            <div className="relative">
+              <Input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+                className="h-12 bg-gray-50/50 border-gray-200 focus-visible:ring-[#004d33]/20 focus-visible:border-[#004d33] transition-colors pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-sm pt-1 pb-2">

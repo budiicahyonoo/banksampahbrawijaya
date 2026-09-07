@@ -155,7 +155,8 @@ export default function AdminBerandaPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2">
               <div className="bg-white rounded-xl shadow-sm md:shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 p-4 md:p-6 flex flex-col">
                 <div className="text-[11px] md:text-xs text-gray-500 mb-4 md:mb-6 font-medium">(Kg)</div>
-                <div className="h-56 md:h-64 w-full flex-1">
+                {/* PERBAIKAN: Menambahkan min-h agar chart ter-render di mobile */}
+                <div className="h-56 md:h-64 min-h-[220px] w-full flex-1">
                   {chartData?.monthly?.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData.monthly} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
@@ -174,11 +175,13 @@ export default function AdminBerandaPage() {
               <div className="bg-white rounded-xl shadow-sm md:shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 p-4 md:p-6 flex flex-col">
                 <h3 className="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Komposisi Jenis Sampah</h3>
                 <div className="flex items-center h-56 md:h-64 flex-1">
-                  <div className="w-1/2 h-full relative">
+                  {/* PERBAIKAN: Memastikan rasio Pie Chart 1:1 agar tidak gepeng */}
+                  <div className="w-1/2 h-full relative aspect-square flex items-center justify-center">
                     {chartData?.composition?.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={chartData.composition} cx="50%" cy="50%" innerRadius={0} outerRadius={80} dataKey="weight" stroke="white" strokeWidth={2}>
+                          {/* outerRadius menggunakan persentase agar dinamis dan bulat sempurna */}
+                          <Pie data={chartData.composition} cx="50%" cy="50%" innerRadius={0} outerRadius="80%" dataKey="weight" stroke="white" strokeWidth={2}>
                             {chartData.composition.map((_: any, index: number) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
@@ -187,7 +190,7 @@ export default function AdminBerandaPage() {
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-gray-400 border-2 border-dashed border-gray-100 rounded-lg">Data kosong</div>
+                      <div className="flex h-full w-full items-center justify-center text-sm text-gray-400 border-2 border-dashed border-gray-100 rounded-lg">Data kosong</div>
                     )}
                   </div>
                   
