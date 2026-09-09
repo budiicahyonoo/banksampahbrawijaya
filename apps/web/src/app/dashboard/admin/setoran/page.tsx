@@ -437,29 +437,29 @@ export default function AdminSetoranPage() {
       {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Filter</h2>
               <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <div className="p-6 space-y-6">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-900">Tanggal</label>
-                <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11">
-                  <Calendar size={18} className="text-gray-500" />
-                  <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+            <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Tanggal</label>
+                <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11 bg-white">
+                  {/* Ikon kalender kiri sudah dihapus */}
+                  <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
                   <span className="text-gray-400">-</span>
-                  <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+                  <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-900">Nasabah</label>
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Nasabah</label>
                 <SearchableSelect options={[{value: '', label: 'Semua Nasabah'}, ...nasabahOptions]} value={filterNasabahId} onChange={setFilterNasabahId} placeholder="Cari Nasabah..." />
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
-              <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] text-white font-medium h-11">Simpan</Button>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
+              <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] hover:bg-[#004d33] text-white font-medium h-11">Simpan</Button>
             </div>
           </div>
         </div>
@@ -468,65 +468,49 @@ export default function AdminSetoranPage() {
       {/* MODAL TAMBAH SETORAN */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Tambah Setoran</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-6">
-                
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                   <label className="text-[15px] font-semibold text-gray-900">Nama</label>
                   <SearchableSelect options={nasabahOptions} value={selectedNasabahId} onChange={setSelectedNasabahId} placeholder="Pilih nama nasabah" />
                 </div>
-
                 <div className="space-y-3">
                   <label className="text-[15px] font-semibold text-gray-900">Jenis & Berat Sampah</label>
                   {depositItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <div className="relative flex-1">
-                        <select 
-                          className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-700 font-medium"
-                          value={item.wasteTypeId} onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)} required
-                        >
+                        <select className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-700 font-medium" value={item.wasteTypeId} onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)} required>
                           <option value="">Pilih jenis sampah</option>
                           {wasteTypes.map(w => (<option key={w.id} value={w.id}>{w.name}</option>))}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                       </div>
-
                       {depositItems.length > 1 && (
-                        <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1" title="Hapus baris"><X size={18} /></button>
+                        <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1"><X size={18} /></button>
                       )}
-
                       <div className="relative w-24 md:w-28">
                         <Input type="number" step="0.1" min="0.1" placeholder="0" value={item.weight} onChange={(e) => handleItemChange(idx, 'weight', e.target.value)} required className="h-11 pr-7 md:pr-8 shadow-sm border-gray-200 text-sm" />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium">kg</span>
                       </div>
                     </div>
                   ))}
-
                   <button type="button" onClick={() => setDepositItems([...depositItems, { wasteTypeId: '', weight: '' }])} className="w-full h-11 mt-3 bg-[#002b1c] text-white rounded-md text-sm font-semibold transition-colors shadow-sm flex items-center justify-center">
                     Tambah jenis sampah
                   </button>
                 </div>
-
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11">Batal</Button>
-                
-                {/* TOMBOL SUBMIT DENGAN STATE LOADING */}
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:opacity-70 disabled:cursor-not-allowed font-medium px-8 h-11 shadow-sm transition-all"
-                >
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+                <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
+                <Button type="submit" disabled={isSubmitting} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:opacity-70 disabled:cursor-not-allowed font-medium px-8 h-11 shadow-sm transition-all">
                   {isSubmitting ? 'Memproses...' : 'Simpan'}
                 </Button>
-
               </div>
             </form>
           </div>
@@ -536,19 +520,16 @@ export default function AdminSetoranPage() {
       {/* MODAL DETAIL SETORAN */}
       {isDetailModalOpen && selectedDeposit && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-xl bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-auto">
-            
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-start sticky top-0 bg-white z-10">
+          <div className="w-full max-w-xl bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-start bg-white shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Detail Setoran</h2>
-                <p className="text-[13px] text-gray-500 font-medium mt-0.5">
-                  {selectedDeposit.nasabah?.name} - {selectedDeposit.nasabah?.nasabahId}
-                </p>
+                <p className="text-[13px] text-gray-500 font-medium mt-0.5">{selectedDeposit.nasabah?.name} - {selectedDeposit.nasabah?.nasabahId}</p>
               </div>
               <button onClick={() => setIsDetailModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1"><X size={20} /></button>
             </div>
 
-            <div className="p-6 space-y-6 overflow-y-auto">
+            <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
               <div className="flex justify-between md:justify-start md:gap-12 text-sm border-b border-gray-100 pb-5">
                 <div>
                   <p className="text-[12px] text-gray-500 font-medium mb-1">Tanggal</p>
@@ -579,27 +560,23 @@ export default function AdminSetoranPage() {
                       <tr key={item.id} className="text-gray-900 font-medium">
                         <td className="py-4">{item.wasteType?.name}</td>
                         <td className="py-4 text-center">{item.weight}</td>
-                        <td className="py-4 text-center">
-                          Rp. {item.weight > 0 ? (item.subtotal / item.weight).toLocaleString('id-ID') : '0'}
-                        </td>
+                        <td className="py-4 text-center">Rp. {item.weight > 0 ? (item.subtotal / item.weight).toLocaleString('id-ID') : '0'}</td>
                         <td className="py-4 text-right">Rp. {item.subtotal?.toLocaleString('id-ID')}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-
               <div className="flex justify-between items-center text-sm pt-2">
                 <span className="text-gray-500 font-medium">Total Berat</span>
                 <span className="font-semibold text-gray-900">{selectedDeposit.totalWeight}kg</span>
               </div>
             </div>
 
-            <div className="bg-[#002b1c] px-6 py-6 flex justify-between items-center text-white sticky bottom-0">
+            <div className="bg-[#002b1c] px-6 py-6 flex justify-between items-center text-white shrink-0">
               <span className="font-medium text-[16px]">Total harga</span>
               <span className="font-bold text-2xl tracking-tight">Rp. {selectedDeposit.totalAmount?.toLocaleString('id-ID')}</span>
             </div>
-
           </div>
         </div>
       )}

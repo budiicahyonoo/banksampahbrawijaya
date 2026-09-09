@@ -416,14 +416,14 @@ export default function AdminSampahPage() {
       {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Filter</h2>
               <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[15px] font-semibold text-gray-900">Sampah</label>
+            <div className="p-6 pb-10 space-y-4 flex-1 overflow-y-auto">
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Sampah</label>
                 <div className="relative">
                   <select 
                     className="appearance-none h-11 w-full rounded-md border border-gray-200 bg-white pl-4 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-900 font-medium"
@@ -438,88 +438,54 @@ export default function AdminSampahPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white">
-              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
               <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] hover:bg-[#004d33] text-white font-medium h-11">Simpan</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Tambah/Edit (Adaptasi Bottom Sheet Mobile) */}
+      {/* Modal Tambah/Edit */}
       {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-xl md:text-lg font-bold text-gray-900">{isEditModalOpen ? 'Edit Harga' : 'Tambah Jenis Sampah'}</h2>
               <button onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
-            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-6">
-                
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                   <label className="text-[15px] font-semibold text-gray-900">Jenis Sampah</label>
-                  <Input 
-                    placeholder="Contoh: Plastik"
-                    value={formData.name} 
-                    onChange={e => setFormData({...formData, name: e.target.value})} 
-                    className={`h-11 shadow-sm border-gray-200 text-[14px] focus-visible:ring-[#004d33]/20 ${isEditModalOpen ? 'bg-gray-50 text-gray-500' : ''}`}
-                    required 
-                  />
+                  <Input placeholder="Contoh: Plastik" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={`h-11 shadow-sm border-gray-200 text-[14px] focus-visible:ring-[#004d33]/20 ${isEditModalOpen ? 'bg-gray-50 text-gray-500' : ''}`} required />
                 </div>
-
                 <div className="space-y-3">
                   <label className="text-[15px] font-semibold text-gray-900">Kategori sampah</label>
                   <div className="flex flex-col gap-4 border border-gray-200 p-4 rounded-lg shadow-sm">
                     <label className={`flex items-center gap-3 ${isEditModalOpen ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                      <input 
-                        type="radio" 
-                        name="category" 
-                        value="ORGANIK" 
-                        checked={formData.category === 'ORGANIK'} 
-                        onChange={e => setFormData({...formData, category: 'ORGANIK'})} 
-                        disabled={isEditModalOpen}
-                        className="w-4 h-4 text-[#004d33] focus:ring-[#004d33]" 
-                      />
+                      <input type="radio" name="category" value="ORGANIK" checked={formData.category === 'ORGANIK'} onChange={e => setFormData({...formData, category: 'ORGANIK'})} disabled={isEditModalOpen} className="w-4 h-4 text-[#004d33] focus:ring-[#004d33]" />
                       <span className="text-[14px] font-medium text-gray-900">Organik</span>
                     </label>
                     <label className={`flex items-center gap-3 ${isEditModalOpen ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                      <input 
-                        type="radio" 
-                        name="category" 
-                        value="ANORGANIK" 
-                        checked={formData.category === 'ANORGANIK'} 
-                        onChange={e => setFormData({...formData, category: 'ANORGANIK'})} 
-                        disabled={isEditModalOpen}
-                        className="w-4 h-4 text-[#004d33] focus:ring-[#004d33]" 
-                      />
+                      <input type="radio" name="category" value="ANORGANIK" checked={formData.category === 'ANORGANIK'} onChange={e => setFormData({...formData, category: 'ANORGANIK'})} disabled={isEditModalOpen} className="w-4 h-4 text-[#004d33] focus:ring-[#004d33]" />
                       <span className="text-[14px] font-medium text-gray-900">Anorganik</span>
                     </label>
                   </div>
                 </div>
-
                 <div className="space-y-1.5">
                   <label className="text-[15px] font-semibold text-gray-900">Harga</label>
                   <div className="relative">
-                    <Input 
-                      type="number" 
-                      placeholder="5.000"
-                      value={formData.price} 
-                      onChange={e => setFormData({...formData, price: e.target.value})} 
-                      required 
-                      className="h-11 shadow-sm border-gray-200 text-[14px] focus-visible:ring-[#004d33]/20 pr-12" 
-                    />
+                    <Input type="number" placeholder="5.000" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required className="h-11 shadow-sm border-gray-200 text-[14px] focus-visible:ring-[#004d33]/20 pr-12" />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[14px] text-gray-400 font-medium">/kg</span>
                   </div>
                   <p className="text-[13px] text-gray-500 mt-1">{isEditModalOpen ? 'Edit harga dari jenis sampah' : 'Masukkan harga dari jenis sampah'}</p>
                 </div>
-
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+                <Button variant="outline" type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
                 <Button type="submit" disabled={!isFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm transition-colors">
                   {isEditModalOpen ? 'Simpan Perubahan' : 'Simpan'}
                 </Button>

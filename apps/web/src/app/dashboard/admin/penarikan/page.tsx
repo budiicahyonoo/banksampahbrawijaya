@@ -370,81 +370,63 @@ export default function AdminPenarikanPage() {
       {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Filter</h2>
               <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <div className="p-6 space-y-6">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-900">Tanggal</label>
-                <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11">
-                  <Calendar size={18} className="text-gray-500" />
-                  <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+            <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Tanggal</label>
+                <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11 bg-white">
+                  <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
                   <span className="text-gray-400">-</span>
-                  <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-sm w-full px-1" />
+                  <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-900">Nasabah</label>
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Nasabah</label>
                 <SearchableSelect options={[{value: '', label: 'Semua Nasabah'}, ...nasabahOptions]} value={filterNasabahId} onChange={setFilterNasabahId} placeholder="Cari Nasabah..." />
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
               <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] text-white font-medium h-11">Simpan</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL CATAT PENARIKAN (Beradaptasi dari Desktop ke Mobile Bottom Sheet) */}
+      {/* MODAL CATAT PENARIKAN */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Catat Penarikan</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-6">
-                
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 pb-10 space-y-6 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                   <label className="text-[15px] font-semibold text-gray-900">Nama</label>
-                  <SearchableSelect 
-                    options={nasabahOptions} 
-                    value={selectedNasabahId} 
-                    onChange={setSelectedNasabahId} 
-                    placeholder="Pilih nama untuk catat penarikan" 
-                  />
+                  <SearchableSelect options={nasabahOptions} value={selectedNasabahId} onChange={setSelectedNasabahId} placeholder="Pilih nama untuk catat penarikan" />
                 </div>
-
                 <div className="space-y-1">
                   <label className="text-[15px] font-semibold text-gray-900">Sisa Saldo</label>
                   <div className="text-[40px] leading-none font-bold text-gray-900 tracking-tight py-2 border-b border-gray-100 pb-6">
                     {selectedNasabah ? currentBalance.toLocaleString('id-ID') : '0'}
                   </div>
                 </div>
-
                 <div className="space-y-1.5">
                   <label className="text-[15px] font-semibold text-gray-900">Tarik Saldo</label>
-                  <Input 
-                    type="number" 
-                    placeholder="Masukkan jumlah saldo yang ingin ditarik" 
-                    value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value)}
-                    required 
-                    className={`h-11 shadow-sm transition-colors text-sm ${isInsufficient ? "border-red-500 focus-visible:ring-red-500 bg-red-50/30 text-red-900" : "border-gray-200 focus-visible:ring-[#004d33]/20"}`}
-                  />
+                  <Input type="number" placeholder="Masukkan jumlah saldo yang ingin ditarik" value={amountInput} onChange={(e) => setAmountInput(e.target.value)} required className={`h-11 shadow-sm transition-colors text-sm ${isInsufficient ? "border-red-500 focus-visible:ring-red-500 bg-red-50/30 text-red-900" : "border-gray-200 focus-visible:ring-[#004d33]/20"}`} />
                   {isInsufficient && <p className="text-xs font-medium text-red-500 mt-1.5">Jumlah saldo tidak mencukupi</p>}
                 </div>
-
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+                <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11 border-transparent">Batal</Button>
                 <Button type="submit" disabled={isSubmitDisabled} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm transition-colors">
                   Simpan
                 </Button>

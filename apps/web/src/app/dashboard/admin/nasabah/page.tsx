@@ -421,14 +421,16 @@ export default function AdminNasabahPage() {
       {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+          {/* Tambahan h-[85vh] md:h-auto agar tinggi konsisten di mobile */}
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Filter</h2>
               <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[15px] font-semibold text-gray-900">Status</label>
+            {/* flex-1 overflow-y-auto akan mendorong footer ke bawah */}
+            <div className="p-6 pb-10 space-y-4 flex-1 overflow-y-auto">
+              <div className="space-y-2.5">
+                <label className="text-[14px] font-semibold text-gray-900">Status</label>
                 <div className="relative">
                   <select 
                     className="appearance-none h-11 w-full rounded-md border border-gray-200 bg-white pl-4 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-900 font-medium"
@@ -443,25 +445,25 @@ export default function AdminNasabahPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white">
-              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+            <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+              <Button variant="outline" onClick={() => setIsMobileFilterOpen(false)} className="flex-1 font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
               <Button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 bg-[#002b1c] hover:bg-[#004d33] text-white font-medium h-11">Simpan</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Tambah Nasabah (Adaptasi Bottom Sheet Mobile) */}
+      {/* Modal Tambah Nasabah */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Tambah Nasabah</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleAddSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-4 md:space-y-5">
+            <form onSubmit={handleAddSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 pb-10 space-y-4 md:space-y-5 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Nama</label>
                   <Input placeholder="Siti Aminah" value={addData.name} onChange={e => setAddData({...addData, name: e.target.value})} required className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" />
@@ -473,48 +475,22 @@ export default function AdminNasabahPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Password</label>
-                  <Input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={addData.password} 
-                    onChange={e => setAddData({...addData, password: e.target.value})} 
-                    required 
-                    className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" 
-                  />
-                  {addData.password.length > 0 && addData.password.length < 6 && (
-                    <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>
-                  )}
+                  <Input type="password" placeholder="••••••••" value={addData.password} onChange={e => setAddData({...addData, password: e.target.value})} required className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" />
+                  {addData.password.length > 0 && addData.password.length < 6 && <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>}
                 </div>
-
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">No. Telp</label>
-                  <Input 
-                    type="tel" 
-                    placeholder="081387383482" 
-                    value={addData.phone} 
-                    onChange={e => setAddData({...addData, phone: e.target.value})} 
-                    required 
-                    className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" 
-                  />
-                  {addData.phone.length > 0 && !validatePhone(addData.phone) && (
-                    <p className="text-xs font-medium text-red-500 mt-1">Minimal 9 digit & hanya angka</p>
-                  )}
+                  <Input type="tel" placeholder="081387383482" value={addData.phone} onChange={e => setAddData({...addData, phone: e.target.value})} required className="h-11 shadow-sm border-gray-200 text-sm focus-visible:ring-[#004d33]/20" />
+                  {addData.phone.length > 0 && !validatePhone(addData.phone) && <p className="text-xs font-medium text-red-500 mt-1">Minimal 9 digit & hanya angka</p>}
                 </div>
-                
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Alamat</label>
-                  <textarea 
-                    placeholder="Banjarum RT01/RW07" 
-                    value={addData.address} 
-                    onChange={e => setAddData({...addData, address: e.target.value})} 
-                    required 
-                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-1 focus:ring-[#004d33] focus:border-[#004d33] transition-all min-h-[100px] md:min-h-[100px] resize-y"
-                  />
+                  <textarea placeholder="Banjarum RT01/RW07" value={addData.address} onChange={e => setAddData({...addData, address: e.target.value})} required className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm outline-none focus:ring-1 focus:ring-[#004d33] focus:border-[#004d33] transition-all min-h-[100px] resize-y" />
                 </div>
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+                <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
                 <Button type="submit" disabled={!isAddFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
               </div>
             </form>
@@ -522,57 +498,41 @@ export default function AdminNasabahPage() {
         </div>
       )}
 
-      {/* Modal Edit Nasabah (Adaptasi Bottom Sheet Mobile) */}
+      {/* Modal Edit Nasabah */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Edit Nasabah</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleEditSubmit} className="flex flex-col overflow-y-auto">
-              <div className="p-6 space-y-4 md:space-y-5">
-                
+            <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 pb-10 space-y-4 md:space-y-5 flex-1 overflow-y-auto">
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Email</label>
                   <Input type="email" value={editData.email} onChange={e => handleEmailChange(e, 'EDIT')} required className={`h-11 shadow-sm text-sm ${editEmailError ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
                   {editEmailError && <p className="text-xs font-medium text-red-500 mt-1">{editEmailError}</p>}
                 </div>
-                
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Password</label>
-                  <Input 
-                    type="password" 
-                    placeholder="Isi hanya jika ingin mengganti sandi" 
-                    value={editData.password} 
-                    onChange={e => setEditData({...editData, password: e.target.value})} 
-                    className={`h-11 shadow-sm text-sm ${editData.password.length > 0 && editData.password.length < 6 ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} 
-                  />
-                  {editData.password.length > 0 && editData.password.length < 6 && (
-                    <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>
-                  )}
+                  <Input type="password" placeholder="Isi hanya jika ingin mengganti sandi" value={editData.password} onChange={e => setEditData({...editData, password: e.target.value})} className={`h-11 shadow-sm text-sm ${editData.password.length > 0 && editData.password.length < 6 ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-200 focus-visible:ring-[#004d33]/20'}`} />
+                  {editData.password.length > 0 && editData.password.length < 6 && <p className="text-xs font-medium text-red-500 mt-1">Password minimal 6 karakter</p>}
                 </div>
-
                 <div className="space-y-1.5">
                   <label className="text-[14px] font-semibold text-gray-900">Status</label>
                   <div className="relative">
-                    <select 
-                      className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] focus:border-[#004d33]"
-                      value={editData.status}
-                      onChange={e => setEditData({...editData, status: e.target.value})}
-                    >
+                    <select className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33]" value={editData.status} onChange={e => setEditData({...editData, status: e.target.value})}>
                       <option value="AKTIF">Aktif</option>
                       <option value="NONAKTIF">Tidak Aktif</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                   </div>
                 </div>
-
               </div>
               
-              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white sticky bottom-0">
-                <Button variant="ghost" type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-100 text-gray-700 h-11 border-transparent">Batal</Button>
+              <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
+                <Button variant="outline" type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
                 <Button type="submit" disabled={!isEditFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
               </div>
             </form>
