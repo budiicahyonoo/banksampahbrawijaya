@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 flex items-center justify-start gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 relative shrink-0">
-               <Image src="/logo.png" alt="Logo Bank Sampah" fill sizes="40px" className="object-contain" />
+               <Image src="/logo2.png" alt="Logo Bank Sampah" fill sizes="40px" className="object-contain" />
             </div>
             <div>
               <h2 className="font-bold tracking-wide text-sm leading-tight">BANK SAMPAH</h2>

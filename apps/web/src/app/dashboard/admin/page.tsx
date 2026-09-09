@@ -86,7 +86,6 @@ export default function AdminBerandaPage() {
             <p className="text-xs md:text-sm text-gray-500">Pantau data nasabah dan transaksi pada periode terpilih</p>
           </div>
           <div className="flex gap-2 items-center bg-white border border-gray-200 px-3 py-2 md:py-1.5 rounded-lg shadow-sm text-sm w-full md:w-auto justify-between md:justify-start">
-            <Calendar size={16} className="text-gray-400 shrink-0" />
             <Input 
               type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} 
               className="h-7 border-none shadow-none text-xs md:text-sm w-full md:w-[110px] px-0 focus-visible:ring-0 bg-transparent text-center"

@@ -183,7 +183,6 @@ export default function AdminPenarikanPage() {
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
-            <Calendar size={16} className="text-gray-500" />
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />
             <span className="text-gray-400">-</span>
             <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />

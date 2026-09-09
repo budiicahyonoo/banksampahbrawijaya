@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
-import { ArrowDown, Sprout, TrendingUp, ArrowDownRight } from 'lucide-react'; // Tambahkan ikon mobile
+import { ArrowDown, Sprout, TrendingUp, ArrowDownRight } from 'lucide-react';
 
 export default function NasabahNotifikasi() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -29,15 +29,22 @@ export default function NasabahNotifikasi() {
             timestamp: date.getTime(),
           });
         } else if (item.type === 'SETORAN') {
-          item.items.forEach((i: any, idx: number) => {
-            formattedNotifs.push({
-              id: `${item.id}-${idx}`,
-              type: 'SETORAN',
-              title: 'Setoran',
-              desc: `${i.name} - ${i.weight} kg - ${dateStr}, ${timeStr}`,
-              nominal: i.subtotal, // PERBAIKAN: Gunakan subtotal asli
-              timestamp: date.getTime(),
-            });
+          // PERBAIKAN: Menghitung total ringkasan (summary) per transaksi
+          const totalWeight = item.items?.reduce((sum: number, i: any) => sum + Number(i.weight || 0), 0) || 0;
+          const totalItems = item.items?.length || 0;
+          const totalNominal = item.nominal || item.items?.reduce((sum: number, i: any) => sum + Number(i.subtotal || 0), 0) || 0;
+          
+          // Format berat agar lebih rapi (misal: 12.5 jadi 12,5)
+          const weightStr = totalWeight % 1 !== 0 ? totalWeight.toFixed(1).replace('.', ',') : totalWeight.toString();
+
+          formattedNotifs.push({
+            id: item.id, // 1 Notifikasi untuk 1 Transaksi
+            type: 'SETORAN',
+            title: 'Setoran',
+            // Format teks digabung sesuai permintaan
+            desc: `${totalItems} Sampah - ${weightStr} kg - ${dateStr}, ${timeStr}`,
+            nominal: totalNominal, 
+            timestamp: date.getTime(),
           });
         }
       });

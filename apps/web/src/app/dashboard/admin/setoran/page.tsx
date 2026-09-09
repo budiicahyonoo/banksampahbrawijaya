@@ -227,7 +227,6 @@ export default function AdminSetoranPage() {
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
-            <Calendar size={16} className="text-gray-500" />
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />
             <span className="text-gray-400">-</span>
             <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-7 border-none shadow-none text-sm w-[115px] px-1 focus-visible:ring-0 text-gray-600" />
@@ -330,7 +329,7 @@ export default function AdminSetoranPage() {
                           <td className="px-6 py-4 uppercase font-medium">{item.totalWeight}KG</td>
                           <td className="px-6 py-4 font-medium text-gray-900">{item.totalAmount.toLocaleString('id-ID')}</td>
                           <td className="px-6 py-4 text-center">
-                            <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors inline-flex">
+                            <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="p-1.5 text-gray-900 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors inline-flex">
                               <Eye size={18} strokeWidth={1.8} />
                             </button>
                           </td>
@@ -411,7 +410,7 @@ export default function AdminSetoranPage() {
                         <Scale size={12} />
                         <span className="text-[11px] font-semibold">{item.totalWeight}kg</span>
                       </div>
-                      <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="text-gray-400 hover:text-gray-700">
+                      <button onClick={() => { setSelectedDeposit(item); setIsDetailModalOpen(true); }} className="text-gray-900 hover:text-gray-700">
                         <Eye size={20} />
                       </button>
                     </div>

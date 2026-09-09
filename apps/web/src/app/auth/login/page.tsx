@@ -44,7 +44,13 @@ export default function LoginPage() {
     }
   };
 
-  const waLink = "https://wa.me/6285769042975?text=halo%20admin%20akun%20saya%20mati%20%2F%20lupa%20password%2C%20mohon%20bantuannya";
+  // 1. Pesan Khusus Lupa Kata Sandi
+  const waMsgLupaPassword = "Halo%20Admin%20Bank%20Sampah%20Sobat%20Banjar%20Arum%20Berseri%2C%0A%0ASaya%20%5B...Isi%20Nama%20Anda...%5D%20ingin%20meminta%20bantuan%20karena%20saya%20lupa%20kata%20sandi%20dan%20tidak%20bisa%20masuk%20ke%20akun%20saya.%0A%0AMohon%20arahannya%20agar%20saya%20bisa%20mereset%20password%20dan%20login%20kembali.%0A%0ATerima%20kasih.";
+  const waLinkLupaPassword = `https://wa.me/6285769042975?text=${waMsgLupaPassword}`;
+
+  // 2. Pesan Umum untuk "Hubungi Admin Desa"
+  const waMsgBantuan = "Halo%20Admin%20Bank%20Sampah%20Sobat%20Banjar%20Arum%20Berseri%2C%0A%0ASaya%20%5B...Isi%20Nama%20Anda...%5D%20ingin%20bertanya%20atau%20meminta%20bantuan%20terkait%20aplikasi%20Bank%20Sampah.%0A%0A%5B...Tuliskan%20pertanyaan%2Fkendala%20Anda%20di%20sini...%5D%0A%0ATerima%20kasih.";
+  const waLinkBantuan = `https://wa.me/6285769042975?text=${waMsgBantuan}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 relative overflow-hidden">
@@ -56,7 +62,7 @@ export default function LoginPage() {
       {/* Header Kiri Atas */}
       <div className="absolute top-6 left-6 flex items-center gap-3">
         <div className="w-10 h-10 relative shrink-0">
-          <Image src="/logo.png" alt="Logo Bank Sampah" fill sizes="40px" className="object-contain" />
+          <Image src="/logo2.png" alt="Logo Bank Sampah" fill sizes="40px" className="object-contain" />
         </div>
         <div>
           <h2 className="font-heading font-bold text-gray-900 leading-tight text-sm">BANK SAMPAH</h2>
@@ -68,7 +74,7 @@ export default function LoginPage() {
         
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 relative mb-5">
-            <Image src="/logo.png" alt="Logo Bank Sampah" fill sizes="64px" className="object-contain drop-shadow-sm" />
+            <Image src="/logo2.png" alt="Logo Bank Sampah" fill sizes="64px" className="object-contain drop-shadow-sm" />
           </div>
           <h1 className="text-[22px] font-bold font-heading text-gray-900 mb-1 tracking-tight">
             Selamat Datang Kembali
@@ -119,16 +125,17 @@ export default function LoginPage() {
             </div>
           </div>
 
+
           <div className="flex items-center justify-between text-sm pt-1 pb-2">
             <label className="flex items-center gap-2 cursor-pointer group">
               <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#004d33] focus:ring-[#004d33] cursor-pointer" />
               <span className="text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Ingat saya</span>
             </label>
             <a 
-              href={waLink}
+              href={waLinkLupaPassword}
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-[#004d33] hover:text-[#003322] hover:underline font-semibold transition-colors"
+              className="text-[#004d33] hover:text-[#003322] hover:underline font-semibold transition-colors relative z-10"
             >
               Lupa Kata Sandi?
             </a>
@@ -143,13 +150,14 @@ export default function LoginPage() {
           </Button>
         </form>
 
+
         <div className="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-500 font-medium">
           Belum memiliki akun atau butuh bantuan? <br/>
           <a 
-            href={waLink}
+            href={waLinkBantuan}
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-[#004d33] hover:text-[#003322] hover:underline font-bold mt-1 inline-block transition-colors"
+            className="text-[#004d33] hover:text-[#003322] hover:underline font-bold mt-1 inline-block transition-colors relative z-10"
           >
             Hubungi Admin Desa
           </a>
