@@ -482,7 +482,9 @@ export default function AdminSetoranPage() {
                 <div className="space-y-3">
                   <label className="text-[15px] font-semibold text-gray-900">Jenis & Berat Sampah</label>
                   {depositItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
+                    <div key={idx} className="flex items-center gap-2 md:gap-3">
+                      
+                      {/* Kolom Pilih Sampah */}
                       <div className="relative flex-1">
                         <select className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-700 font-medium" value={item.wasteTypeId} onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)} required>
                           <option value="">Pilih jenis sampah</option>
@@ -490,15 +492,25 @@ export default function AdminSetoranPage() {
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                       </div>
-                      {depositItems.length > 1 && (
-                        <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1"><X size={18} /></button>
-                      )}
-                      <div className="relative w-24 md:w-28">
+                      
+                      {/* Ikon "x" statis sesuai UI Design */}
+                      <span className="text-gray-400 font-medium text-sm px-1"></span>
+                      
+                      {/* Kolom Input Berat */}
+                      <div className="relative w-20 md:w-28 shrink-0">
                         <Input type="number" step="0.1" min="0.1" placeholder="0" value={item.weight} onChange={(e) => handleItemChange(idx, 'weight', e.target.value)} required className="h-11 pr-7 md:pr-8 shadow-sm border-gray-200 text-sm" />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium">kg</span>
                       </div>
+
+                      {/* Tombol Silang (Hapus) dipindah ke Paling Kanan */}
+                      {depositItems.length > 1 && (
+                        <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1.5 shrink-0 transition-colors">
+                          <X size={20} />
+                        </button>
+                      )}
                     </div>
                   ))}
+                  
                   <button type="button" onClick={() => setDepositItems([...depositItems, { wasteTypeId: '', weight: '' }])} className="w-full h-11 mt-3 bg-[#002b1c] text-white rounded-md text-sm font-semibold transition-colors shadow-sm flex items-center justify-center">
                     Tambah jenis sampah
                   </button>

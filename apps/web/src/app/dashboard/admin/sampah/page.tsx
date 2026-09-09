@@ -500,19 +500,30 @@ export default function AdminSampahPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-[340px] md:max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden p-6 relative text-center">
             
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 border border-red-100">
-              <Trash2 size={28} />
+            {/* Judul dipindah ke atas */}
+            <h3 className="text-[18px] font-bold text-gray-900 mb-4">Hapus Jenis Sampah</h3>
+            
+            {/* Ikon di tengah */}
+            <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+              <Trash2 size={24} />
             </div>
             
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Hapus Jenis Sampah</h3>
-            <p className="text-[14px] text-gray-500 mb-8 leading-relaxed px-2">
-              Anda yakin ingin menghapus jenis sampah ini?<br/>
-              Tidak bisa mengembalikan data yang sudah dihapus.
+            {/* Teks dirapikan agar tidak berulang/terlalu panjang */}
+            <p className="text-[14px] font-semibold text-gray-900 mb-1">
+              Anda yakin ingin menghapus jenis sampah ini?
+            </p>
+            <p className="text-[13px] text-gray-500 mb-8 leading-relaxed px-2">
+              Data yang sudah dihapus tidak dapat dikembalikan.
             </p>
             
+            {/* Tombol ditukar: Batal (Kiri), Hapus (Kanan) */}
             <div className="flex gap-3 w-full">
-              <Button onClick={handleDeleteConfirm} className="flex-1 bg-[#E50000] hover:bg-red-700 text-white font-semibold h-11 rounded-[8px]">Hapus</Button>
-              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 font-semibold h-11 border-gray-200 text-gray-700 bg-gray-50 rounded-[8px]">Batal</Button>
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 font-semibold h-11 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 rounded-[8px]">
+                Batal
+              </Button>
+              <Button onClick={handleDeleteConfirm} className="flex-1 bg-[#E50000] hover:bg-red-700 text-white font-semibold h-11 rounded-[8px]">
+                Hapus
+              </Button>
             </div>
           </div>
         </div>
