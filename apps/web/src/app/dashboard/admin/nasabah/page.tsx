@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import toast from 'react-hot-toast';
-import { Search, ChevronDown, Download, Plus, FolderOpen, SquarePen, ChevronLeft, ChevronRight, X, Filter } from 'lucide-react'; // Tambahan icon Filter
+import { Search, ChevronDown, Download, Plus, FolderOpen, SquarePen, ChevronLeft, ChevronRight, X, Filter } from 'lucide-react';
 
 interface Nasabah {
   id: string;
@@ -26,23 +26,23 @@ export default function AdminNasabahPage() {
   const [users, setUsers] = useState<Nasabah[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
 
-  // Paginasi State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Modals State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter khusus mobile
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [addData, setAddData] = useState({ name: '', email: '', password: '', phone: '', address: '' });
   const [addEmailError, setAddEmailError] = useState('');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({ id: '', name: '', email: '', password: '', phone: '', address: '', status: '' });
   const [editEmailError, setEditEmailError] = useState('');
+
+  // State Anti Double-Submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchNasabah = async () => {
     try {
@@ -57,7 +57,6 @@ export default function AdminNasabahPage() {
 
   useEffect(() => { fetchNasabah(); }, []);
 
-  // Reset ke halaman 1 jika filter berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, itemsPerPage]);
@@ -68,7 +67,6 @@ export default function AdminNasabahPage() {
     return matchSearch && matchStatus;
   });
 
-  // Logika Paginasi
   const totalItems = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -120,8 +118,9 @@ export default function AdminNasabahPage() {
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAddFormValid) return;
+    if (!isAddFormValid || isSubmitting) return;
 
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Menyimpan data...');
     try {
       await api.post('/users', { ...addData, role: 'NASABAH' });
@@ -136,6 +135,8 @@ export default function AdminNasabahPage() {
         : (errorResponse || 'Terjadi kesalahan pada server.');
       
       toast.error(errorMessage, { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,16 +156,21 @@ export default function AdminNasabahPage() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEditFormValid) return;
+    if (!isEditFormValid || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const loadingToast = toast.loading('Memperbarui data...');
     try {
       const payload: any = { email: editData.email, phone: editData.phone, address: editData.address, status: editData.status };
       if (editData.password) payload.password = editData.password;
       await api.patch(`/users/${editData.id}`, payload);
       setIsEditModalOpen(false);
       fetchNasabah();
-      toast.success('Data nasabah berhasil diperbarui!');
+      toast.success('Data nasabah berhasil diperbarui!', { id: loadingToast });
     } catch (error) {
-      toast.error('Gagal memperbarui nasabah.');
+      toast.error('Gagal memperbarui nasabah.', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,14 +189,11 @@ export default function AdminNasabahPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-      
-      {/* Teks Sapaan Khusus Mobile Sesuai Desain */}
       <div className="md:hidden">
         <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Nasabah</h2>
         <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh nasabah terdaftar.</p>
       </div>
 
-      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP (Original) --- */}
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="relative w-64">
@@ -226,9 +229,7 @@ export default function AdminNasabahPage() {
         </div>
       </div>
 
-      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
       <div className="md:hidden flex flex-col gap-3">
-        {/* Search Bar Mobile */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <Input 
@@ -239,7 +240,6 @@ export default function AdminNasabahPage() {
             className="w-full pl-10 h-12 bg-gray-100 border-transparent focus-visible:ring-[#004d33]/20 rounded-[10px]"
           />
         </div>
-        {/* Tombol Mobile */}
         <div className="flex gap-2">
           <Button onClick={() => setIsAddModalOpen(true)} className="flex-1 gap-2 bg-[#002b1c] hover:bg-[#004d33] text-white shadow-sm h-11 rounded-[8px] font-medium text-sm">
             <Plus size={16} /> Tambah Nasabah
@@ -253,11 +253,9 @@ export default function AdminNasabahPage() {
         </div>
       </div>
 
-      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredUsers.length === 0 ? (
-        /* Empty State */
         <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
@@ -270,7 +268,6 @@ export default function AdminNasabahPage() {
         </div>
       ) : (
         <>
-          {/* TABEL VERSI DESKTOP (Original) */}
           <div className="hidden md:block">
             <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="overflow-x-auto">
@@ -359,11 +356,9 @@ export default function AdminNasabahPage() {
             </Card>
           </div>
 
-          {/* LIST VERSI MOBILE */}
           <div className="md:hidden flex flex-col gap-4">
             {currentUsers.map((item) => (
               <div key={item.id} className="bg-white p-4 rounded-[12px] border border-gray-200 shadow-sm">
-                
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -400,11 +395,9 @@ export default function AdminNasabahPage() {
                     <p className="font-semibold text-gray-900">Rp. {item.totalHargaRp.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
-
               </div>
             ))}
 
-            {/* Paginasi Mobile */}
             <div className="flex items-center justify-between pt-2 pb-6">
                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
                  Sebelumnya
@@ -418,16 +411,13 @@ export default function AdminNasabahPage() {
         </>
       )}
 
-      {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
-          {/* Tambahan h-[85vh] md:h-auto agar tinggi konsisten di mobile */}
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Filter</h2>
               <button onClick={() => setIsMobileFilterOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            {/* flex-1 overflow-y-auto akan mendorong footer ke bawah */}
             <div className="p-6 pb-10 space-y-4 flex-1 overflow-y-auto">
               <div className="space-y-2.5">
                 <label className="text-[14px] font-semibold text-gray-900">Status</label>
@@ -453,7 +443,6 @@ export default function AdminNasabahPage() {
         </div>
       )}
 
-      {/* Modal Tambah Nasabah */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -491,14 +480,15 @@ export default function AdminNasabahPage() {
               
               <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
                 <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
-                <Button type="submit" disabled={!isAddFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
+                <Button type="submit" disabled={!isAddFormValid || isSubmitting} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">
+                  {isSubmitting ? 'Memproses...' : 'Simpan'}
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Edit Nasabah */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -533,7 +523,9 @@ export default function AdminNasabahPage() {
               
               <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
                 <Button variant="outline" type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
-                <Button type="submit" disabled={!isEditFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">Simpan</Button>
+                <Button type="submit" disabled={!isEditFormValid || isSubmitting} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm">
+                  {isSubmitting ? 'Memproses...' : 'Simpan'}
+                </Button>
               </div>
             </form>
           </div>

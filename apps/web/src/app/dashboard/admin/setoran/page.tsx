@@ -78,7 +78,7 @@ export default function AdminSetoranPage() {
   // Form & Submit States
   const [selectedNasabahId, setSelectedNasabahId] = useState('');
   const [depositItems, setDepositItems] = useState<WasteItemInput[]>([{ wasteTypeId: '', weight: '' }]);
-  const [isSubmitting, setIsSubmitting] = useState(false); // State baru untuk mencegah double submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -100,12 +100,10 @@ export default function AdminSetoranPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Reset Halaman jika filter berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [startDate, endDate, filterNasabahId, itemsPerPage, searchQuery]);
 
-  // Logika Filter
   const filteredDeposits = deposits.filter(d => {
     const dDate = d.createdAt.split('T')[0];
     const matchStartDate = startDate ? dDate >= startDate : true;
@@ -115,7 +113,6 @@ export default function AdminSetoranPage() {
     return matchStartDate && matchEndDate && matchNasabah && matchSearch;
   });
 
-  // Logika Paginasi
   const totalItems = filteredDeposits.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -152,7 +149,7 @@ export default function AdminSetoranPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return; // Mencegah fungsi berjalan jika sedang submit
+    if (isSubmitting) return; 
 
     if (!selectedNasabahId) {
       toast.error('Pilih nasabah terlebih dahulu');
@@ -174,7 +171,7 @@ export default function AdminSetoranPage() {
       return;
     }
 
-    setIsSubmitting(true); // Kunci tombol submit
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Menyimpan setoran...');
     
     try {
@@ -188,7 +185,7 @@ export default function AdminSetoranPage() {
       const errorMsg = error.response?.data?.message || 'Gagal mencatat setoran';
       toast.error(errorMsg, { id: loadingToast });
     } finally {
-      setIsSubmitting(false); // Buka kembali tombol submit setelah selesai
+      setIsSubmitting(false); 
     }
   };
 
@@ -217,13 +214,11 @@ export default function AdminSetoranPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       
-      {/* Teks Sapaan Khusus Mobile */}
       <div className="md:hidden">
         <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Setoran</h2>
         <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh transaksi setoran nasabah.</p>
       </div>
 
-      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP --- */}
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
@@ -236,7 +231,6 @@ export default function AdminSetoranPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          {/* Eksport Button Desktop */}
           <Button 
             variant="outline" 
             onClick={handleExportExcel} 
@@ -251,9 +245,7 @@ export default function AdminSetoranPage() {
         </div>
       </div>
 
-      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
       <div className="md:hidden flex flex-col gap-3">
-        {/* Search Bar Mobile */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <Input 
@@ -264,12 +256,10 @@ export default function AdminSetoranPage() {
             className="w-full pl-10 h-12 bg-gray-100 border-transparent focus-visible:ring-[#004d33]/20 rounded-[10px]"
           />
         </div>
-        {/* Tombol Mobile */}
         <div className="flex gap-2">
           <Button onClick={() => setIsAddModalOpen(true)} className="flex-1 gap-2 bg-[#002b1c] hover:bg-[#004d33] text-white shadow-sm h-11 rounded-[8px] font-medium text-sm">
             <Plus size={16} /> Catat Setoran
           </Button>
-          {/* Eksport Button Mobile */}
           <Button 
             variant="outline" 
             onClick={handleExportExcel} 
@@ -284,11 +274,9 @@ export default function AdminSetoranPage() {
         </div>
       </div>
 
-      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredDeposits.length === 0 ? (
-        /* Empty State */
         <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
@@ -301,7 +289,6 @@ export default function AdminSetoranPage() {
         </div>
       ) : (
         <>
-          {/* TABEL VERSI DESKTOP (Original) */}
           <div className="hidden md:block">
             <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="overflow-x-auto">
@@ -339,7 +326,6 @@ export default function AdminSetoranPage() {
                   </tbody>
                 </table>
               </div>
-              {/* Paginasi Desktop */}
               <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
                 <span className="text-gray-500 font-medium">
                   Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
@@ -373,13 +359,11 @@ export default function AdminSetoranPage() {
             </Card>
           </div>
 
-          {/* LIST VERSI MOBILE */}
           <div className="md:hidden flex flex-col gap-4">
             {currentDeposits.map((item, index, arr) => {
               const date = new Date(item.createdAt);
               const dateStr = date.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
               
-              // Cek apakah tanggal item ini berbeda dari item sebelumnya (untuk grouping tanggal)
               const prevDate = index > 0 ? new Date(arr[index - 1].createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '';
               const showDateHeader = dateStr !== prevDate;
 
@@ -419,7 +403,6 @@ export default function AdminSetoranPage() {
               );
             })}
 
-            {/* Paginasi Mobile (Simple) */}
             <div className="flex items-center justify-between pt-2 pb-6">
                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
                  Sebelumnya
@@ -433,7 +416,6 @@ export default function AdminSetoranPage() {
         </>
       )}
 
-      {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -445,7 +427,6 @@ export default function AdminSetoranPage() {
               <div className="space-y-2.5">
                 <label className="text-[14px] font-semibold text-gray-900">Tanggal</label>
                 <div className="flex gap-2 items-center border border-gray-200 px-3 rounded-md shadow-sm h-11 bg-white">
-                  {/* Ikon kalender kiri sudah dihapus */}
                   <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
                   <span className="text-gray-400">-</span>
                   <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-full border-none shadow-none text-[13px] w-full px-0" />
@@ -464,7 +445,6 @@ export default function AdminSetoranPage() {
         </div>
       )}
 
-      {/* MODAL TAMBAH SETORAN */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -484,7 +464,6 @@ export default function AdminSetoranPage() {
                   {depositItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2 md:gap-3">
                       
-                      {/* Kolom Pilih Sampah */}
                       <div className="relative flex-1">
                         <select className="appearance-none w-full h-11 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm outline-none shadow-sm focus:ring-1 focus:ring-[#004d33] cursor-pointer text-gray-700 font-medium" value={item.wasteTypeId} onChange={(e) => handleItemChange(idx, 'wasteTypeId', e.target.value)} required>
                           <option value="">Pilih jenis sampah</option>
@@ -493,16 +472,13 @@ export default function AdminSetoranPage() {
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                       </div>
                       
-                      {/* Ikon "x" statis sesuai UI Design */}
                       <span className="text-gray-400 font-medium text-sm px-1"></span>
                       
-                      {/* Kolom Input Berat */}
                       <div className="relative w-20 md:w-28 shrink-0">
                         <Input type="number" step="0.1" min="0.1" placeholder="0" value={item.weight} onChange={(e) => handleItemChange(idx, 'weight', e.target.value)} required className="h-11 pr-7 md:pr-8 shadow-sm border-gray-200 text-sm" />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium">kg</span>
                       </div>
 
-                      {/* Tombol Silang (Hapus) dipindah ke Paling Kanan */}
                       {depositItems.length > 1 && (
                         <button type="button" onClick={() => removeItemRow(idx)} className="text-gray-400 hover:text-red-500 p-1.5 shrink-0 transition-colors">
                           <X size={20} />
@@ -528,7 +504,6 @@ export default function AdminSetoranPage() {
         </div>
       )}
 
-      {/* MODAL DETAIL SETORAN */}
       {isDetailModalOpen && selectedDeposit && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-xl bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">

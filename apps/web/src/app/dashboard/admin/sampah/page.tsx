@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import toast from 'react-hot-toast';
-import { ChevronDown, Download, Plus, FolderOpen, SquarePen, Trash2, ChevronLeft, ChevronRight, X, Leaf, Banknote, Search, Filter } from 'lucide-react'; // Tambahan Search & Filter icon
+import { ChevronDown, Download, Plus, FolderOpen, SquarePen, Trash2, ChevronLeft, ChevronRight, X, Leaf, Banknote, Search, Filter } from 'lucide-react';
 
 interface WasteType {
   id: string;
@@ -24,7 +24,7 @@ export default function AdminSampahPage() {
 
   // Filter
   const [categoryFilter, setCategoryFilter] = useState('Semua');
-  const [searchQuery, setSearchQuery] = useState(''); // Tambahan state pencarian untuk mobile
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Paginasi State
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,11 +34,12 @@ export default function AdminSampahPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter mobile
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedWaste, setSelectedWaste] = useState<WasteType | null>(null);
 
-  // Form Data
+  // Form Data & Submit State
   const [formData, setFormData] = useState({ name: '', category: 'ANORGANIK', price: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchWastes = async () => {
     try {
@@ -53,19 +54,16 @@ export default function AdminSampahPage() {
 
   useEffect(() => { fetchWastes(); }, []);
 
-  // Reset Halaman jika filter berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [categoryFilter, itemsPerPage, searchQuery]);
 
-  // Logika Filter
   const filteredWastes = wastes.filter(w => {
     const matchCategory = categoryFilter === 'Semua' || w.category === categoryFilter;
     const matchSearch = w.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
 
-  // Logika Paginasi
   const totalItems = filteredWastes.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -88,12 +86,13 @@ export default function AdminSampahPage() {
     return pages;
   };
 
-  // Validasi Form
   const isFormValid = formData.name.trim() !== '' && formData.price !== '' && formData.category !== '';
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || isSubmitting) return;
+    
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Menyimpan jenis sampah...');
     try {
       await api.post('/waste-types', {
@@ -107,6 +106,8 @@ export default function AdminSampahPage() {
       toast.success('Jenis sampah berhasil ditambahkan!', { id: loadingToast });
     } catch (error) {
       toast.error('Gagal menambah jenis sampah', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -118,7 +119,9 @@ export default function AdminSampahPage() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedWaste || !isFormValid) return;
+    if (!selectedWaste || !isFormValid || isSubmitting) return;
+
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Memperbarui data...');
     try {
       await api.patch(`/waste-types/${selectedWaste.id}`, {
@@ -131,6 +134,8 @@ export default function AdminSampahPage() {
       toast.success('Data sampah diperbarui!', { id: loadingToast });
     } catch (error) {
       toast.error('Gagal mengedit jenis sampah', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -140,7 +145,9 @@ export default function AdminSampahPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedWaste) return;
+    if (!selectedWaste || isSubmitting) return;
+
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Menghapus data...');
     try {
       await api.delete(`/waste-types/${selectedWaste.id}`);
@@ -150,6 +157,8 @@ export default function AdminSampahPage() {
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Gagal menghapus jenis sampah', { id: loadingToast });
       setIsDeleteModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,13 +186,11 @@ export default function AdminSampahPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       
-      {/* Teks Sapaan Khusus Mobile */}
       <div className="md:hidden">
         <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Sampah</h2>
         <p className="text-[13px] text-gray-500 mt-1">Kelola data jenis sampah yang diterima.</p>
       </div>
 
-      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP --- */}
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="relative w-56">
           <select 
@@ -211,7 +218,6 @@ export default function AdminSampahPage() {
         </div>
       </div>
 
-      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
       <div className="md:hidden flex flex-col gap-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -236,11 +242,9 @@ export default function AdminSampahPage() {
         </div>
       </div>
 
-      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredWastes.length === 0 ? (
-        /* Empty State */
         <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
@@ -256,7 +260,6 @@ export default function AdminSampahPage() {
         </div>
       ) : (
         <>
-          {/* TABEL VERSI DESKTOP (Original) */}
           <div className="hidden md:block">
             <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="overflow-x-auto">
@@ -337,7 +340,6 @@ export default function AdminSampahPage() {
               </div>
             </Card>
 
-            {/* Banner Summary Desktop Sesuai Figma */}
             <div className="grid grid-cols-2 gap-6 mt-4">
               <div className="bg-white rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 p-5 flex items-center gap-5">
                 <div className="w-14 h-14 bg-[#004d33] rounded-xl flex items-center justify-center text-white shadow-sm shrink-0">
@@ -361,11 +363,9 @@ export default function AdminSampahPage() {
             </div>
           </div>
 
-          {/* LIST VERSI MOBILE */}
           <div className="md:hidden flex flex-col gap-4">
             {currentWastes.map((item) => (
               <div key={item.id} className="bg-white p-4 rounded-[12px] border border-gray-200 shadow-sm">
-                
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-bold text-gray-900 text-[16px] leading-tight mb-1">{item.name}</h3>
@@ -395,11 +395,9 @@ export default function AdminSampahPage() {
                     <p className="font-bold text-gray-900">Rp. {item.totalAmount.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
-
               </div>
             ))}
 
-            {/* Paginasi Mobile */}
             <div className="flex items-center justify-between pt-2 pb-6">
                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
                  Sebelumnya
@@ -413,7 +411,6 @@ export default function AdminSampahPage() {
         </>
       )}
 
-      {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -446,7 +443,6 @@ export default function AdminSampahPage() {
         </div>
       )}
 
-      {/* Modal Tambah/Edit */}
       {(isAddModalOpen || isEditModalOpen) && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -486,8 +482,8 @@ export default function AdminSampahPage() {
               
               <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
                 <Button variant="outline" type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11">Batal</Button>
-                <Button type="submit" disabled={!isFormValid} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm transition-colors">
-                  {isEditModalOpen ? 'Simpan Perubahan' : 'Simpan'}
+                <Button type="submit" disabled={!isFormValid || isSubmitting} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:opacity-70 disabled:cursor-not-allowed font-medium px-8 h-11 shadow-sm transition-colors">
+                  {isSubmitting ? 'Memproses...' : (isEditModalOpen ? 'Simpan Perubahan' : 'Simpan')}
                 </Button>
               </div>
             </form>
@@ -495,34 +491,21 @@ export default function AdminSampahPage() {
         </div>
       )}
 
-      {/* Modal Hapus (Pop-up di Tengah) */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-[340px] md:max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden p-6 relative text-center">
-            
-            {/* Judul dipindah ke atas */}
             <h3 className="text-[18px] font-bold text-gray-900 mb-4">Hapus Jenis Sampah</h3>
-            
-            {/* Ikon di tengah */}
             <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
               <Trash2 size={24} />
             </div>
-            
-            {/* Teks dirapikan agar tidak berulang/terlalu panjang */}
-            <p className="text-[14px] font-semibold text-gray-900 mb-1">
-              Anda yakin ingin menghapus jenis sampah ini?
-            </p>
-            <p className="text-[13px] text-gray-500 mb-8 leading-relaxed px-2">
-              Data yang sudah dihapus tidak dapat dikembalikan.
-            </p>
-            
-            {/* Tombol ditukar: Batal (Kiri), Hapus (Kanan) */}
+            <p className="text-[14px] font-semibold text-gray-900 mb-1">Anda yakin ingin menghapus jenis sampah ini?</p>
+            <p className="text-[13px] text-gray-500 mb-8 leading-relaxed px-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
             <div className="flex gap-3 w-full">
               <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} className="flex-1 font-semibold h-11 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 rounded-[8px]">
                 Batal
               </Button>
-              <Button onClick={handleDeleteConfirm} className="flex-1 bg-[#E50000] hover:bg-red-700 text-white font-semibold h-11 rounded-[8px]">
-                Hapus
+              <Button onClick={handleDeleteConfirm} disabled={isSubmitting} className="flex-1 bg-[#E50000] hover:bg-red-700 text-white disabled:opacity-70 disabled:cursor-not-allowed font-semibold h-11 rounded-[8px]">
+                {isSubmitting ? 'Hapus...' : 'Hapus'}
               </Button>
             </div>
           </div>

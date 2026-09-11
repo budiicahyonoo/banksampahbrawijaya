@@ -9,7 +9,6 @@ import { Card } from '@/components/ui/card';
 import toast from 'react-hot-toast';
 import { Calendar, Download, Plus, FolderOpen, ChevronLeft, ChevronRight, X, ChevronDown, Search, Filter, ArrowUpFromLine } from 'lucide-react';
 
-// --- Komponen Custom Searchable Dropdown ---
 function SearchableSelect({ options, value, onChange, placeholder }: { options: {value: string, label: string}[], value: string, onChange: (v: string) => void, placeholder: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -57,7 +56,7 @@ export default function AdminPenarikanPage() {
   const [startDate, setStartDate] = useState(''); 
   const [endDate, setEndDate] = useState('');
   const [filterNasabahId, setFilterNasabahId] = useState('');
-  const [searchQuery, setSearchQuery] = useState(''); // State pencarian mobile
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Paginasi State
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,9 +64,12 @@ export default function AdminPenarikanPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Modal filter mobile
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedNasabahId, setSelectedNasabahId] = useState('');
   const [amountInput, setAmountInput] = useState('');
+
+  // Form Submit State
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -87,12 +89,10 @@ export default function AdminPenarikanPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Reset Paginasi jika filter berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [startDate, endDate, filterNasabahId, itemsPerPage, searchQuery]);
 
-  // Logika Filter
   const filteredWithdrawals = withdrawals.filter(w => {
     const wDate = w.createdAt.split('T')[0];
     const matchStartDate = startDate ? wDate >= startDate : true;
@@ -102,7 +102,6 @@ export default function AdminPenarikanPage() {
     return matchStartDate && matchEndDate && matchNasabah && matchSearch;
   });
 
-  // Logika Paginasi
   const totalItems = filteredWithdrawals.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -125,7 +124,6 @@ export default function AdminPenarikanPage() {
     return pages;
   };
 
-  // Validasi Form
   const selectedNasabah = useMemo(() => nasabahList.find(n => n.id === selectedNasabahId), [selectedNasabahId, nasabahList]);
   const currentBalance = selectedNasabah?.balance || 0;
   const withdrawAmount = parseFloat(amountInput) || 0;
@@ -136,8 +134,9 @@ export default function AdminPenarikanPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitDisabled) return;
+    if (isSubmitDisabled || isSubmitting) return;
 
+    setIsSubmitting(true);
     const loadingToast = toast.loading('Memproses penarikan...');
     try {
       await api.post('/withdrawals', { nasabahId: selectedNasabahId, amount: withdrawAmount });
@@ -149,6 +148,8 @@ export default function AdminPenarikanPage() {
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || 'Gagal memproses penarikan';
       toast.error(errorMsg, { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -173,13 +174,11 @@ export default function AdminPenarikanPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       
-      {/* Teks Sapaan Khusus Mobile */}
       <div className="md:hidden">
         <h2 className="text-[22px] font-bold text-gray-900 leading-tight">Penarikan</h2>
         <p className="text-[13px] text-gray-500 mt-1">Daftar seluruh transaksi penarikan saldo.</p>
       </div>
 
-      {/* --- BLOK 1: TOOLBAR VERSI DESKTOP --- */}
       <div className="hidden md:flex justify-between items-center bg-white p-2 rounded-lg mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex gap-2 items-center border border-gray-200 px-3 py-2 rounded-md shadow-sm text-sm bg-white h-11">
@@ -203,7 +202,6 @@ export default function AdminPenarikanPage() {
         </div>
       </div>
 
-      {/* --- BLOK 2: TOOLBAR VERSI MOBILE --- */}
       <div className="md:hidden flex flex-col gap-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -228,11 +226,9 @@ export default function AdminPenarikanPage() {
         </div>
       </div>
 
-      {/* --- AREA DATA --- */}
       {loading ? (
         <div className="py-20 text-center text-gray-400">Memuat data...</div>
       ) : filteredWithdrawals.length === 0 ? (
-        /* Empty State */
         <div className="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-16 md:p-24 bg-white/50">
           <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100 mb-4">
             <FolderOpen size={24} className="text-gray-400" strokeWidth={1.5} />
@@ -245,7 +241,6 @@ export default function AdminPenarikanPage() {
         </div>
       ) : (
         <>
-          {/* TABEL VERSI DESKTOP (Original) */}
           <div className="hidden md:block">
             <Card className="overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="overflow-x-auto">
@@ -278,7 +273,6 @@ export default function AdminPenarikanPage() {
                 </table>
               </div>
               
-              {/* Paginasi Desktop */}
               <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white text-sm">
                 <span className="text-gray-500 font-medium">
                   Menampilkan {totalItems === 0 ? 0 : startIndex + 1}-{endIndex} dari {totalItems} data
@@ -312,7 +306,6 @@ export default function AdminPenarikanPage() {
             </Card>
           </div>
 
-          {/* LIST VERSI MOBILE */}
           <div className="md:hidden flex flex-col gap-4">
             {currentWithdrawals.map((item, index, arr) => {
               const date = new Date(item.createdAt);
@@ -352,7 +345,6 @@ export default function AdminPenarikanPage() {
               );
             })}
 
-            {/* Paginasi Mobile */}
             <div className="flex items-center justify-between pt-2 pb-6">
                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white disabled:opacity-50">
                  Sebelumnya
@@ -366,7 +358,6 @@ export default function AdminPenarikanPage() {
         </>
       )}
 
-      {/* MODAL FILTER MOBILE */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -396,7 +387,6 @@ export default function AdminPenarikanPage() {
         </div>
       )}
 
-      {/* MODAL CATAT PENARIKAN */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 p-0 md:p-4 backdrop-blur-[2px]">
           <div className="w-full max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
@@ -426,8 +416,8 @@ export default function AdminPenarikanPage() {
               
               <div className="px-6 py-5 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0">
                 <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="flex-1 md:flex-none font-medium bg-gray-50 border-gray-200 text-gray-700 h-11 border-transparent">Batal</Button>
-                <Button type="submit" disabled={isSubmitDisabled} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:bg-gray-300 font-medium px-8 h-11 shadow-sm transition-colors">
-                  Simpan
+                <Button type="submit" disabled={isSubmitDisabled || isSubmitting} className="flex-1 md:flex-none bg-[#002b1c] hover:bg-[#004d33] text-white disabled:opacity-70 disabled:cursor-not-allowed font-medium px-8 h-11 shadow-sm transition-colors">
+                  {isSubmitting ? 'Memproses...' : 'Simpan'}
                 </Button>
               </div>
             </form>
